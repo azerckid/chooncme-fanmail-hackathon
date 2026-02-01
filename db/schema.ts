@@ -23,6 +23,8 @@ export const fanLetters = sqliteTable("fan_letters", {
     // 상태
     isRead: integer("is_read", { mode: "boolean" }).default(false),
     isStarred: integer("is_starred", { mode: "boolean" }).default(false),
+    isReplied: integer("is_replied", { mode: "boolean" }).default(false),
+    repliedAt: text("replied_at"),                // 답장 일시 (ISO 8601). NULL이면 미답장
 
     // 타임스탬프
     receivedAt: text("received_at"),              // 이메일 수신 시간 (ISO String)
@@ -33,6 +35,7 @@ export const fanLetters = sqliteTable("fan_letters", {
     countryIdx: index("idx_country").on(table.country),
     sentimentIdx: index("idx_sentiment").on(table.sentiment),
     isReadIdx: index("idx_is_read").on(table.isRead),
+    isRepliedIdx: index("idx_is_replied").on(table.isReplied),
     receivedAtIdx: index("idx_received_at").on(table.receivedAt),
 }));
 

@@ -101,6 +101,7 @@ export async function GET(req: NextRequest) {
         const sentiment = searchParams.get("sentiment");
         const isRead = searchParams.get("isRead");
         const isStarred = searchParams.get("isStarred");
+        const isReplied = searchParams.get("isReplied");
         const startDate = searchParams.get("startDate");
         const endDate = searchParams.get("endDate");
 
@@ -122,6 +123,7 @@ export async function GET(req: NextRequest) {
         if (sentiment) conditions.push(eq(fanLetters.sentiment, sentiment));
         if (isRead !== null && isRead !== undefined) conditions.push(eq(fanLetters.isRead, isRead === "true"));
         if (isStarred !== null && isStarred !== undefined) conditions.push(eq(fanLetters.isStarred, isStarred === "true"));
+        if (isReplied !== null && isReplied !== undefined) conditions.push(eq(fanLetters.isReplied, isReplied === "true"));
         if (startDate) conditions.push(gte(fanLetters.receivedAt, startDate));
         if (endDate) conditions.push(lte(fanLetters.receivedAt, endDate));
 
@@ -145,6 +147,8 @@ export async function GET(req: NextRequest) {
                 items: data.map(item => ({
                     ...item,
                     topics: item.topics ? JSON.parse(item.topics) : [],
+                    isReplied: item.isReplied ?? false,
+                    repliedAt: item.repliedAt ?? null,
                 })),
                 pagination: {
                     page,
