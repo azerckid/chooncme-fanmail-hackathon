@@ -23,3 +23,12 @@ export {
   markAsRead,
   addLabel,
 } from './fetch';
+
+// 분류 함수
+export {
+  classifyEmail,
+  classifyEmails,
+  filterFanLetters,
+  partitionEmails,
+  type ClassificationResult,
+} from './classify';
