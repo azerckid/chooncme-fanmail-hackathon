@@ -45,11 +45,14 @@ export interface ProcessResult {
   durationMs: number;
 }
 
+/** 환경변수 EMAIL_HOURS_AGO 미설정 시 기본 수집 구간 (시간) */
+const DEFAULT_HOURS_AGO = 3;
+
 /**
  * 처리 옵션
  */
 export interface ProcessOptions {
-  /** 조회할 시간 범위 (시간), 기본 1 */
+  /** 조회할 시간 범위 (시간). 기본값: 환경변수 EMAIL_HOURS_AGO 또는 3 */
   hoursAgo?: number;
   /** 최대 처리할 메일 수, 기본 50 */
   maxEmails?: number;
@@ -66,8 +69,11 @@ export interface ProcessOptions {
  * 1시간마다 호출되어 신규 메일을 처리
  */
 export async function processEmails(options: ProcessOptions = {}): Promise<ProcessResult> {
+  const envHours = process.env.EMAIL_HOURS_AGO ? parseInt(process.env.EMAIL_HOURS_AGO, 10) : undefined;
+  const defaultHours = Number.isFinite(envHours) && envHours! > 0 ? envHours! : DEFAULT_HOURS_AGO;
+
   const {
-    hoursAgo = 1,
+    hoursAgo = defaultHours,
     maxEmails = 50,
     classifyDelayMs = 500,
     replyDelayMs = 1000,
