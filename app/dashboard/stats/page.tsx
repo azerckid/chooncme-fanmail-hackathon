@@ -105,12 +105,19 @@ export default async function StatsPage() {
         );
     }
 
-    // 7일치 요약 추이용 데이터 가공 (TrendChart 호환)
+    // 7일 및 30일치 요약 추이용 데이터 가공 (TrendChart 호환)
     const last7DaysTrend = [];
     for (let i = 6; i >= 0; i--) {
         const date = DateTime.now().minus({ days: i }).toISODate();
-        const found = stats.trend.find(d => d.date === date);
+        const found = stats.trend.find((d: any) => d.date === date);
         last7DaysTrend.push({ date, count: found?.count || 0 });
+    }
+
+    const last30DaysTrend = [];
+    for (let i = 29; i >= 0; i--) {
+        const date = DateTime.now().minus({ days: i }).toISODate();
+        const found = stats.trend.find((d: any) => d.date === date);
+        last30DaysTrend.push({ date, count: found?.count || 0 });
     }
 
     return (
@@ -194,7 +201,7 @@ export default async function StatsPage() {
                         <CardDescription>편지 수신량이 가장 많았던 날을 확인하세요.</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[350px] p-6">
-                        <TrendChart data={last7DaysTrend} />
+                        <TrendChart data7Days={last7DaysTrend} data30Days={last30DaysTrend} />
                     </CardContent>
                 </Card>
 
