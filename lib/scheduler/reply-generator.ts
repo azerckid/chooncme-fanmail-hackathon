@@ -16,6 +16,9 @@ import {
   type GeneratedReply,
 } from '@/lib/llm';
 import { EmailMessage } from '@/lib/email';
+import { db } from '@/db';
+import { fanLetters } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 const USE_TWO_STEP_REPLY = process.env.USE_TWO_STEP_REPLY === 'true';
 
