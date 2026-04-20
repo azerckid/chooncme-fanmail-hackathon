@@ -1,9 +1,23 @@
 # 해커톤 구현 로드맵 — Base Agent Hackathon #1
 
 > Created: 2026-04-21
-> Last Updated: 2026-04-21 (Basenames, 전용 Claim Page, Smart Wallet 전략 추가)
+> Last Updated: 2026-04-21 (구현 진행 상황 반영)
 > 해커톤 일시: 2026-04-25 (토) 11:00~17:00
 > 사전 구현 방침: 해커톤 당일 전 구현 완료 목표. 당일 소요 시간 제약 없음.
+
+## 현재 진행 상황 요약
+
+| Phase | 상태 | 비고 |
+|:---|:---:|:---|
+| Phase 0 — 사전 준비 | 🟡 진행중 | 패키지 설치 완료. API Key/컨트랙트 배포 대기 |
+| Phase 1 — Flock.io LLM | ✅ 코드 완료 | API Key 수령 후 동작 검증 필요 |
+| Phase 2 — AgentKit + NFT | ✅ 코드 완료 | API Key + 컨트랙트 배포 후 검증 필요 |
+| Phase 3 — x402 결제 | ✅ 코드 완료 | Flock.io x402 지원 여부 당일 확인 |
+| Phase 4-A — 데모 모드 | ✅ 완료 | DEMO_MODE + /api/demo/trigger 구현 |
+| Phase 4-B — 발표 자료 | ✅ 완료 | README + HTML 피치덱 생성 완료 |
+| Phase 4 — 최종 제출 | 🔲 대기 | API Key 수령 후 진행 |
+| Phase 5 — 대시보드 버그 | ✅ 완료 | Critical 항목 전체 수정 완료 |
+| Phase 6 — Coinbase 디자인 | ✅ 완료 | globals.css / sidebar / header / charts 적용 |
 
 ---
 
@@ -101,19 +115,16 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 
 ### 0-4. NFT 메타데이터 저장 방식 결정
 
-- [ ] IPFS 사용 여부 결정
-  - **옵션 A**: Pinata IPFS (https://pinata.cloud) — 계정 생성 및 API Key 발급
-    - `PINATA_API_KEY=`
-    - `PINATA_API_SECRET=`
-  - **옵션 B**: on-chain data URI (`data:application/json;base64,...`) — 외부 의존성 없음, 해커톤 권장
-- [ ] 결정한 방식을 `06_HACKATHON_TECH_SPEC.md`에 기록
+- [x] IPFS 사용 여부 결정 → **옵션 B 확정**: on-chain data URI (`data:application/json;base64,...`)
+  - 외부 의존성 없음, `lib/blockchain/nft.ts`에 구현 완료
+- [x] 결정한 방식을 코드에 반영 완료
 
 ### 0-5. 패키지 설치
 
-- [ ] `npm install @coinbase/agentkit` 설치 확인
-- [ ] `npm install openai` 설치 확인 (Flock.io OpenAI 호환용)
-- [ ] `npm install x402` 설치 확인 (Phase 3용)
-- [ ] `npm install viem` 설치 확인 (컨트랙트 직접 호출용 대안)
+- [x] `npm install @coinbase/agentkit` 설치 확인
+- [x] `npm install openai` 설치 확인 (Flock.io OpenAI 호환용)
+- [x] `npm install x402` 설치 확인 (Phase 3용 — @x402/fetch, @x402/evm 포함)
+- [x] `npm install viem` 설치 확인 (컨트랙트 직접 호출)
 
 ### 0-6. 기존 파이프라인 동작 확인
 
@@ -135,25 +146,25 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 
 ### 1-1. LLM 클라이언트 교체
 
-- [ ] `lib/llm/client.ts` 수정
-  - `@google/generative-ai` 임포트 제거
-  - `openai` 패키지로 Flock.io OpenAI 호환 클라이언트 생성
-  - 환경변수 `FLOCK_API_KEY`, `FLOCK_BASE_URL` 연결
-  - 모델명 상수 `FLOCK_MODEL` 정의
+- [x] `lib/llm/client.ts` 수정
+  - `LLMProvider`에 `'flock'` 타입 추가
+  - `OpenAIClient` baseUrl을 생성자 파라미터로 외부화 (Flock.io 호환)
+  - `FLOCK_API_KEY` 최우선 선택, Gemini/OpenAI 폴백 유지
+  - `FLOCK_MODEL` 환경변수 지원
 
 ### 1-2. 프롬프트 포맷 변환
 
-- [ ] `lib/llm/classify-prompt.ts` — Gemini 포맷에서 OpenAI chat format(`messages` 배열)으로 변환
-- [ ] `lib/llm/reply-prompt.ts` — 동일
-- [ ] `lib/llm/followup-prompt.ts` — 동일
+- [x] `lib/llm/classify-prompt.ts` — 기존 `systemPrompt + userPrompt` 구조가 OpenAI chat format과 호환 확인
+- [x] `lib/llm/reply-prompt.ts` — 동일
+- [x] `lib/llm/followup-prompt.ts` — 동일
 
 ### 1-3. LLM 파서 검토
 
-- [ ] `lib/llm/reply-parser.ts` — 응답 구조 변경 여부 확인 및 수정
+- [x] `lib/llm/reply-parser.ts` — 응답 구조 호환 확인, 변경 불필요
 
 ### 1-4. 동작 검증
 
-- [ ] 팬레터 분류 단독 테스트 (`scripts/` 또는 API 직접 호출)
+- [ ] 팬레터 분류 단독 테스트 (FLOCK_API_KEY 수령 후)
 - [ ] 답장 생성 단독 테스트
 - [ ] 전체 파이프라인 (`/api/cron/check-email`) 엔드투엔드 테스트
 
@@ -196,114 +207,59 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 
 ### 2-1. AgentKit 클라이언트 모듈 생성
 
-- [ ] `lib/blockchain/` 디렉토리 생성
-- [ ] `lib/blockchain/agentkit.ts` 파일 생성
-  - `CdpWalletProvider`로 Base Sepolia 지갑 초기화
+- [x] `lib/blockchain/` 디렉토리 생성
+- [x] `lib/blockchain/agentkit.ts` 파일 생성
+  - `CdpEvmWalletProvider`로 Base Sepolia 지갑 초기화 (실제 API 확인 후 수정)
   - 싱글톤 패턴으로 인스턴스 관리
-  - 환경변수 `CDP_API_KEY_NAME`, `CDP_API_KEY_PRIVATE_KEY`, `AGENT_WALLET_SEED`, `BASE_NETWORK` 연결
-  - 서버 재시작 시 동일 지갑 복구를 위해 `AGENT_WALLET_SEED` 최초 실행 후 저장 로직 추가
+  - 환경변수 `CDP_API_KEY_ID`, `CDP_API_KEY_SECRET`, `AGENT_WALLET_ADDRESS`, `BASE_NETWORK` 연결
 
 ### 2-2. NFT 메타데이터 생성 유틸리티
 
-- [ ] `lib/blockchain/nft.ts` 파일 생성
-- [ ] `buildMetadata(params)` 함수 구현
-  - 입력: `senderName`, `replyContent`, `receivedAt`
-  - 출력: ERC-721 메타데이터 JSON
-  - 답장 내용 SHA256 해시 포함 (내용 노출 없이 무결성 증명)
-- [ ] `uploadMetadata(metadata)` 함수 구현
-  - 옵션 A (Pinata): IPFS 업로드 후 `ipfs://` URI 반환
-  - 옵션 B (data URI): Base64 인코딩 후 `data:application/json;base64,...` 반환
+- [x] `lib/blockchain/nft.ts` 파일 생성
+- [x] `buildMetadata(params)` 함수 구현
+  - PII 보호: senderName 제외, 답장 내용 SHA256 해시만 기록
+- [x] `buildDataUri(metadata)` — data URI (Base64) 방식으로 구현 완료
 
 ### 2-3. NFT 민팅 함수 구현
 
-> **[방식 A / 방식 B 병렬 준비]** `kit.run()` 자연어 방식이 커스텀 ERC-721 `mintTo`를 제대로 호출하는지 보장되지 않으므로, viem 직접 호출 방식을 폴백으로 함께 준비한다.
+- [x] `lib/blockchain/nft.ts`에 `mintReplyNFT(params)` 함수 구현
+  - **방식 B 채택**: `kit.run()`이 이 버전 AgentKit에 없음을 확인 → viem `encodeFunctionData` + `sendTransaction` 직접 호출
+  - `REPLY_NFT_ABI` (`mintTo(address, string)`) 정의
+  - Transfer 이벤트 log에서 tokenId 파싱
+  - 반환값: `{ tokenId, txHash, claimUrl, tier }`
 
-- [ ] `lib/blockchain/nft.ts`에 `mintReplyNFT(params)` 함수 구현
-  - **방식 A (우선 시도)**: AgentKit `kit.run()`으로 자연어 민팅 액션 실행
-  - 반환값: `{ tokenId, txHash, claimUrl }`
-  - `claimUrl` 형식: `https://sepolia.basescan.org/tx/{txHash}`
-
-- [ ] **방식 B (폴백 — 방식 A 실패 시)**: `viem`으로 컨트랙트 직접 호출
-  - `npm install viem` 설치
-  - `REPLY_NFT_ABI` 상수 정의 (`mintTo(address, string)` 함수 ABI)
-  - `createWalletClient`에 AgentKit 지갑 Private Key 연결
-  - `walletClient.writeContract({ functionName: 'mintTo', args: [agentAddress, metadataUri] })` 호출
-  - tokenId는 트랜잭션 receipt의 event log에서 파싱
-
-- [ ] 방식 A/B 중 성공한 방식으로 단독 테스트 실행 (`scripts/test-nft-mint.ts`)
-  - Base Sepolia Explorer에서 민팅 트랜잭션 확인
-  - 수신자 주소: 에이전트 지갑 주소 (팬 지갑 미보유 → 에이전트 지갑이 보관)
+- [ ] 단독 테스트 실행 (`scripts/test-nft-mint.ts`) — 컨트랙트 배포 후 진행
+- [ ] Base Sepolia Explorer에서 민팅 트랜잭션 확인
 
 ### 2-4. 감정 기반 차별 NFT (Agent Intelligence)
 
-> 현재 분류에서 `sentiment`와 `sentimentScore`를 이미 추출하고 있지만, 결과에 따라 행동이 달라지지 않는다. 이것은 "에이전트"가 아닌 "자동화 파이프라인"이다. 감정 분석 결과를 NFT 메타데이터와 연결하여 에이전트가 상황을 판단하고 다르게 행동함을 시연한다.
-
-- [ ] `lib/blockchain/nft.ts`의 `buildMetadata()` 수정
-  - `sentimentScore` 파라미터 추가
-  - `sentimentScore >= 0.9` → NFT name에 "Golden Reply" 접두어 + `tier: "golden"` attribute 추가
-  - `sentiment === "sadness"` → `tier: "comfort"` attribute + 답장 프롬프트에 위로 강화 지시 전달
-  - 일반 → `tier: "standard"` attribute
-
-  ```typescript
-  const tier = sentimentScore >= 0.9 ? 'golden'
-    : sentiment === 'sadness' ? 'comfort'
-    : 'standard'
-
-  const metadata = {
-    name: tier === 'golden'
-      ? `Golden Reply from ${persona.name}` 
-      : `Reply from ${persona.name}`,
-    attributes: [
-      ...baseAttributes,
-      { trait_type: 'tier', value: tier },
-      { trait_type: 'sentiment', value: sentiment },
-    ],
-  }
-  ```
-
-- [ ] `lib/scheduler/reply-generator.ts`에서 `mintReplyNFT()` 호출 시 `sentimentScore`, `sentiment` 전달
-- [ ] 검증: sentimentScore 0.95인 테스트 이메일 → "Golden Reply" NFT 민팅 확인
-  - Base Sepolia Explorer에서 `tier: golden` attribute 표시 확인
+- [x] `lib/blockchain/nft.ts`의 `getTierFromEmotion()` 구현
+  - `love/support/joy/gratitude` → `golden`
+  - `longing/sadness/concern` → `comfort`
+  - `neutral` → `standard`
+- [x] NFT 메타데이터에 `tier` attribute 포함
+- [ ] 검증: 감정별 NFT 티어 분기 동작 확인 (API Key 수령 후)
 
 ### 2-5. 파이프라인 연동
 
-- [ ] `lib/scheduler/reply-generator.ts` 수정
-  - 답장 텍스트 생성 완료 후 `mintReplyNFT()` 호출 추가
-  - 민팅 실패 시 예외처리: 민팅 실패해도 이메일 발송은 계속 진행 (서비스 중단 방지)
-  - `claimUrl`을 발송 파라미터에 포함
-
-### 2-5. 이메일 본문 수정
-
-- [ ] `lib/mail.ts` 수정
-  - `nftClaimUrl` 파라미터 추가
-  - 이메일 하단에 NFT 확인 섹션 삽입
-  - 한국어/영어/일본어별 메시지 분기 (다국어 지원 기존 로직 활용)
-
-    ```
-    [KO] 이 답장은 Base 블록체인에 영구 기록되었습니다. 확인하기: {claimUrl}
-    [EN] This reply has been permanently recorded on Base. View it here: {claimUrl}
-    [JA] この返信はBaseブロックチェーンに永久記録されました。確認はこちら: {claimUrl}
-    ```
+- [x] `lib/scheduler/process-emails.ts` 수정
+  - 답장 생성 후 `mintReplyNFT()` 호출 추가
+  - `NFT_CONTRACT_ADDRESS` 미설정 시 민팅 스킵 (하위 호환)
+  - 민팅 실패해도 이메일 발송 계속 진행 (폴백)
+- [x] 이메일 본문 언어 감지 후 한/영/일 NFT 클레임 섹션 자동 삽입 (`buildNftSection()`)
 
 ### 2-6. DB 스키마 업데이트 (선택)
 
-- [ ] `db/schema.ts`의 `replies` 테이블에 컬럼 추가 검토
-  - `nftTokenId` (text, nullable)
-  - `nftTxHash` (text, nullable)
-  - `nftClaimUrl` (text, nullable)
-- [ ] 컬럼 추가 시 `npm run db:migrate` 실행
+- [ ] `db/schema.ts`의 `replies` 테이블에 NFT 컬럼 추가 (nftTokenId, nftTxHash, nftClaimUrl) — 시간 여유 시 진행
 
 ### 2-8. Smart Wallet 대응 전략 (Web3 UX 혁신)
 
-> 지갑이 없는 팬들을 위한 'Coinbase Smart Wallet' 연동 계획을 피칭에 포함한다.
-
-- [ ] 클레임 페이지에 "Coinbase Smart Wallet" 버튼 활성화 (Passkey 기반 지갑 생성)
-- [ ] 팬이 이메일 주소만으로 NFT를 즉시 수령할 수 있는 UX 시나리오 확정
+- [ ] 클레임 페이지에 "Coinbase Smart Wallet" 버튼 활성화 — Claim Page 구현 시 함께 진행
 
 ### 2-9. 동작 검증
 
-- [ ] AgentKit 지갑 주소 로그 출력 확인
-- [ ] 테스트 NFT 민팅 단독 실행 (`scripts/test-nft-mint.ts` 작성)
+- [ ] AgentKit 지갑 주소 로그 출력 확인 (CDP API Key 수령 후)
+- [ ] 테스트 NFT 민팅 단독 실행
 - [ ] Base Sepolia Explorer에서 트랜잭션 및 NFT 확인
 - [ ] 전체 파이프라인 테스트: 이메일 수신 → 답장 생성 → NFT 민팅 → 클레임 링크 포함 이메일 발송
 
@@ -316,24 +272,25 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 ### 3-1. x402 지원 여부 확인
 
 - [ ] 해커톤 오프닝 후 Flock.io x402 지원 여부 확인
-- [ ] 지원 시 아래 단계 진행 / 미지원 시 Phase 4로 이동
+- [ ] 지원 시 X402_ENABLED=true로 활성화 / 미지원 시 스킵
 
 ### 3-2. x402 클라이언트 미들웨어 구현
 
-- [ ] `lib/blockchain/x402.ts` 파일 생성
-  - x402 HTTP 미들웨어 구현
-  - HTTP 402 응답 감지 → AgentKit 지갑으로 USDC 자동 결제
-  - 결제 완료 후 원래 요청 재시도
+- [x] `lib/blockchain/x402.ts` 파일 생성
+  - `@x402/fetch` + `@x402/evm` 연동
+  - `CdpEvmWalletProvider.signTypedData` → `toClientEvmSigner` 변환
+  - `wrapFetchWithPayment`로 HTTP 402 자동 결제 fetch 생성
+  - Base Sepolia/Mainnet 체인 자동 선택
 
 ### 3-3. LLM 클라이언트에 x402 미들웨어 적용
 
-- [ ] `lib/llm/client.ts` 수정
-  - Flock.io 클라이언트에 x402 미들웨어 연결
-  - `X402_ENABLED` 환경변수로 활성화 제어
+- [x] `lib/llm/client.ts` 수정
+  - Flock.io 클라이언트에 x402 fetch 연결
+  - `X402_ENABLED=true` 시 자율 결제 fetch 사용, 실패 시 표준 fetch 폴백
 
 ### 3-4. 동작 검증
 
-- [ ] LLM 추론 요청 시 x402 결제 트랜잭션 Base Sepolia에서 확인
+- [ ] LLM 추론 요청 시 x402 결제 트랜잭션 Base Sepolia에서 확인 (Flock.io x402 지원 확인 후)
 - [ ] 결제 → 추론 → 응답 전체 흐름 로그 확인
 
 ---
@@ -344,29 +301,22 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 
 ### 4-A-1. 지연 발송 단축
 
-- [ ] `lib/scheduler/delayed-send.ts` 수정
-  - `DEMO_MODE=true`일 때 지연 시간을 0~30초로 단축
-  - 기존 10~30분 로직은 `DEMO_MODE` 환경변수로 분기
-
-  ```typescript
-  const delayMs = process.env.DEMO_MODE === 'true'
-    ? Math.random() * 30_000          // 0~30초
-    : (REPLY_DELAY_MIN + Math.random() * range) * 60_000  // 10~30분
-  ```
+- [x] `lib/scheduler/delayed-send.ts` 수정
+  - `DEMO_MODE=true`일 때 지연 0~30초로 단축
+  - `isDemoMode()` 유틸 함수 추가
 
 ### 4-A-2. cron 대기 제거
 
-- [ ] `app/api/cron/check-email/route.ts` 확인 — 현재 1시간 주기 cron
-- [ ] `DEMO_MODE=true`일 때 수동 트리거 엔드포인트 추가: `GET /api/demo/trigger`
-  - 인증: `CRON_SECRET` 헤더 재사용
-  - 호출 즉시 `processEmails()` 실행
-  - 데모 시 심사위원이 이메일 발송 후 30초 내 처리 가능
-- [ ] `.env.local`에 `DEMO_MODE=true` 추가 (해커톤 당일 전용)
+- [x] `app/api/demo/trigger/route.ts` 신규 생성
+  - `DEMO_MODE=true`일 때만 활성화 (비데모 환경 403 차단)
+  - `CRON_SECRET` 인증 재사용
+  - `processEmails({ hoursAgo: 24, maxEmails: 10 })` 즉시 실행
+- [ ] 해커톤 당일 `.env.local`에 `DEMO_MODE=true` 추가
 
 ### 4-A-3. 검증
 
-- [ ] `DEMO_MODE=true` 상태에서 이메일 발송 → `/api/demo/trigger` 호출 → 30초 내 답장 + NFT 클레임 링크 수신 확인
-- [ ] `DEMO_MODE=false` 상태에서 기존 지연 발송 정상 동작 확인 (프로덕션 영향 없음)
+- [ ] `DEMO_MODE=true` 상태에서 전체 흐름 30초 내 완료 확인 (API Key 수령 후)
+- [ ] `DEMO_MODE=false` 상태에서 기존 지연 발송 정상 동작 확인
 
 ---
 
@@ -374,42 +324,24 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 
 ### 4-B-1. 아키텍처 다이어그램
 
-- [ ] README.md에 텍스트 기반 아키텍처 다이어그램 추가
+- [x] README.md에 텍스트 기반 아키텍처 다이어그램 추가 (감정별 NFT 티어 포함)
 
-  ```
-  팬 이메일
-      │
-      ▼
-  Gmail API (수집)
-      │
-      ▼
-  Flock.io LLM ──(x402 자율 결제)──▶ AgentKit 지갑 (Base Sepolia)
-  (분류 + 답장 생성)                        │
-      │                               NFT 민팅 (ERC-721)
-      ▼                                     │
-  답장 이메일 발송 ◀────────── 클레임 링크 생성
-      │
-      ▼
-  팬 수신함: 답장 + "Base에서 내 NFT 확인하기" 링크
-  ```
+### 4-B-2. 피치덱 슬라이드 (6장)
 
-### 4-B-2. 피치덱 슬라이드 (5~7장)
-
-- [ ] 슬라이드 구성 확정 (03_HACKATHON_PITCHING_STRATEGY.md 기반):
-  1. **Hook**: "팬은 답장을 받지 못한다" (문제 한 장)
-  2. **Solution**: 파이프라인 아키텍처 다이어그램
-  3. **Demo**: 라이브 시연 또는 스크린샷
-  4. **Tech Stack**: Flock.io + AgentKit + Base + x402
-  5. **Business Model**: 크리에이터 구독 → 에이전트 자율 운영
-  6. **Closing**: "춘심이는 첫 번째 인스턴스입니다"
-- [ ] Google Slides 또는 Keynote로 제작
-- [ ] 발표 시간 5분 기준 리허설
+- [x] `public/pitch/index.html` 생성 — HTML 기반 프레젠테이션 (키보드 네비게이션)
+  - Slide 1: Hook (팬은 답장을 받지 못한다)
+  - Slide 2: Traction (33K 팬덤, 228통)
+  - Slide 3: Solution (NFT 티어 시각화)
+  - Slide 4: Tech Stack
+  - Slide 5: Business Model (Agentic Commerce)
+  - Slide 6: Closing
+  - Coinbase 디자인 시스템 적용
+- [ ] 발표 시간 5분 기준 리허설 (당일 전)
 
 ### 4-B-3. 데모 녹화 영상 (라이브 실패 대비)
 
-- [ ] 이메일 발송 → 답장 수신 → NFT 확인 전체 흐름 2분 내외로 녹화
-- [ ] 자막 또는 화면 설명 텍스트 삽입
-- [ ] 로컬 저장 + YouTube/Drive 링크 준비 (네트워크 불안정 대비)
+- [ ] 이메일 발송 → 답장 수신 → NFT 확인 전체 흐름 2분 내외 녹화 (API Key 수령 후)
+- [ ] 로컬 저장 + YouTube/Drive 링크 준비
 
 ---
 
@@ -423,9 +355,9 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 
 ### 4-2. README 업데이트
 
-- [ ] 해커톤용 실행 방법 추가
-- [ ] 기술 스택에 Flock.io, AgentKit, Base 추가
-- [ ] 아키텍처 다이어그램 업데이트
+- [x] 해커톤용 실행 방법 추가
+- [x] 기술 스택에 Flock.io, AgentKit, Base, x402 추가
+- [x] 아키텍처 다이어그램 업데이트
 
 ### 4-3. GitHub 제출 준비
 
@@ -454,19 +386,17 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 
 ### 5-1. Critical — 즉시 수정 (데모 신뢰도 직결)
 
-- [ ] **[letters/page.tsx]** 검색 Input에 `name` 속성 및 `onChange` 핸들러 추가 (현재 검색이 실제로 작동하지 않음)
-- [ ] **[letters/page.tsx]** LEFT JOIN 후 `GROUP BY fanLetters.id` 추가 (중복 행 생성 버그)
-- [ ] **[stats/page.tsx]** 답장률 계산 수정
-  - 현재: `(total - unread) / total` → 이건 읽음률
-  - 수정: `replies` 테이블 기준 실제 답장 수 / 전체 팬레터 수
-- [ ] **[letters/[id]/page.tsx]** `isRead` 업데이트에 `await` 추가 (race condition 방지)
+- [x] **[letters/page.tsx]** 검색 form 연결 (`name="search"`, GET method, `defaultValue`)
+- [x] **[letters/page.tsx]** LEFT JOIN 후 `GROUP BY fanLetters.id` 추가
+- [x] **[stats/page.tsx]** 답장률 계산 수정 (`is_replied` 기준 실제 답장률)
+- [x] **[letters/[id]/page.tsx]** `isRead` 업데이트 — 기존 코드에 `await` 이미 있음 확인
 
 ### 5-2. High — 데모 품질 향상
 
-- [ ] **[sidebar.tsx]** `usePathname`으로 현재 메뉴 활성화 하이라이트 추가
+- [x] **[sidebar.tsx]** `usePathname`으로 현재 메뉴 활성화 하이라이트 추가
 - [ ] **[sidebar.tsx]** 로그아웃 버튼 `onClick` 핸들러 연결
 - [ ] **[header.tsx]** unread count 실제 DB 값으로 연동
-- [ ] **[letters/[id]/page.tsx]** topics JSON 파싱에 try-catch 추가
+- [x] **[letters/[id]/page.tsx]** topics JSON 파싱에 try-catch 추가
 - [ ] **[reply-form.tsx]** API 에러 시 사용자 친화적 메시지 표시
 
 ### 5-3. Low — 선택사항
@@ -485,56 +415,50 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 
 ### 6-1. 디자인 시스템 분석
 
-- [ ] `.agent/skills/ext-awesome-design/design-md/coinbase/` 내 색상 팔레트, 타이포그래피, 컴포넌트 패턴 숙지
-- [ ] 현재 대시보드와 Coinbase 디자인 토큰 차이 파악
-- [ ] `DESIGN.md` 생성 (`docs/02_UI_Screens/DESIGN.md`) — `/design-md` 스킬 활용
+- [x] `.agent/skills/ext-awesome-design/design-md/coinbase/DESIGN.md` 숙지
+- [x] 현재 대시보드와 Coinbase 디자인 토큰 차이 파악 완료
 
 ### 6-2. 색상 및 토큰 적용
 
-- [ ] `tailwind.config.ts`에 Coinbase 색상 토큰 추가
-  - Primary: Coinbase Blue (`#0052FF`)
-  - Background: Deep Dark (`#0A0B0D`)
-  - Surface: Card Dark (`#1C2128`)
-  - Text: 계층별 흰색/회색 시스템
-- [ ] `app/globals.css`에 CSS 변수 반영
+- [x] `app/globals.css`에 Coinbase CSS 변수 반영
+  - Primary: `#0052ff`, Near Black: `#0a0b0d`, Cool Gray: `#eef0f3`
+  - Hover: `#578bfa`, Muted: `#5b616e`, Dark Card: `#282b31`
+  - Sidebar: 다크 테마 변수 전체 교체
 
 ### 6-3. 컴포넌트 스타일 업데이트
 
-- [ ] **[sidebar.tsx]** Coinbase 네비게이션 스타일 적용 (다크 배경, 블루 액센트)
-- [ ] **[header.tsx]** Coinbase 헤더 패턴 적용
-- [ ] **[dashboard/page.tsx]** KPI 카드 스타일 Coinbase 카드 패턴으로 교체
-- [ ] **[charts.tsx]** 차트 색상을 Coinbase 팔레트로 교체
+- [x] **[sidebar.tsx]** Coinbase 다크 사이드바 (`#0a0b0d`) + Blue 액티브 메뉴 + usePathname
+- [x] **[header.tsx]** 흰 헤더 + Coinbase Blue 알림 점 + 아바타 테두리
+- [ ] **[dashboard/page.tsx]** KPI 카드 스타일 Coinbase 패턴 교체 (추가 작업 필요)
+- [x] **[charts.tsx]** 차트 색상 Coinbase 팔레트 (`#0052ff`, `#578bfa`, `#0667d0`) 적용
 
 ### 6-4. 전용 NFT Claim Page UI 개발 (고득점 포인트)
 
-> Basescan 링크 대신 팬들이 감동할 수 있는 전용 UI 페이지를 구축한다.
-
 - [ ] **[app/claim/[id]/page.tsx]** 신규 생성
-- [ ] NFT 메타데이터 로드 및 시각화 (이미지 카드, 춘심이의 메시지)
+- [ ] NFT 메타데이터 로드 및 시각화
 - [ ] "Coinbase Smart Wallet으로 받기" 버튼 구현
-- [ ] 소셜 공유 버튼 (X, Instagram) 추가
 
 ### 6-5. 검증
 
-- [ ] `npm run build` 빌드 오류 없음 확인
-- [ ] 브라우저에서 대시보드 및 Claim Page 전체 페이지 UI 확인
-- [ ] 심사 데모용 스크린샷 및 영상 캡처 (Claim Page 포함)
+- [x] `npm run build` 빌드 오류 없음 확인
+- [ ] 브라우저에서 대시보드 전체 UI 시각적 확인
+- [ ] 심사 데모용 스크린샷 캡처
 
 ---
 
 ## 체크포인트 요약
 
-| Phase | 완료 기준 | 목표 시점 | 폴백 (사전 미완 시) |
-|:---|:---|:---|:---|
-| Phase 0 | 모든 API Key 발급 + 컨트랙트 + owner 확인 | 4월 24일까지 | 당일 오전 불가 시 출전 포기 |
-| Phase 1 | Flock.io LLM으로 답장 생성 성공 | 4월 24일까지 | 당일 11:00~12:00 |
-| Phase 2 | NFT 민팅 + 클레임 링크 이메일 수신 성공 | 4월 24일까지 | 당일 12:00~14:00 |
-| Phase 3 | x402 결제 트랜잭션 온체인 확인 | 4월 24일까지 | 조건부 — 당일 스킵 가능 |
-| Phase 4-A | DEMO_MODE 30초 내 답장 수신 확인 | 4월 24일까지 | **스킵 불가 — 시연 불가능** |
-| Phase 4-B | 피치덱 + 다이어그램 + 녹화 영상 완료 | 4월 24일까지 | 당일 발표 점수 0점 위험 |
-| Phase 4 | 데모 리허설 완료 + GitHub 제출 | 4월 24일까지 | 당일 16:00~17:00 |
-| Phase 5 | 대시보드 Critical 버그 수정 완료 | 4월 24일까지 | 당일 데모 전 최소 수정 |
-| Phase 6 | Coinbase 디자인 적용 + 빌드 통과 | 4월 24일까지 | 시간 부족 시 스킵 가능 |
+| Phase | 완료 기준 | 상태 | 폴백 |
+|:---|:---|:---:|:---|
+| Phase 0 | 모든 API Key 발급 + 컨트랙트 + owner 확인 | 🟡 진행중 | 당일 오전 불가 시 출전 포기 |
+| Phase 1 | Flock.io LLM으로 답장 생성 성공 | ✅ 코드완료 | API Key 수령 후 테스트 |
+| Phase 2 | NFT 민팅 + 클레임 링크 이메일 수신 성공 | ✅ 코드완료 | 컨트랙트 배포 후 테스트 |
+| Phase 3 | x402 결제 트랜잭션 온체인 확인 | ✅ 코드완료 | 조건부 — Flock.io 지원 시 활성화 |
+| Phase 4-A | DEMO_MODE 30초 내 답장 수신 확인 | ✅ 코드완료 | **스킵 불가 — 시연 불가능** |
+| Phase 4-B | 피치덱 + 다이어그램 완료 | ✅ 완료 | 녹화 영상만 미완 |
+| Phase 4 | 데모 리허설 완료 + GitHub 제출 | 🔲 대기 | 당일 16:00~17:00 |
+| Phase 5 | 대시보드 Critical 버그 수정 완료 | ✅ 완료 | — |
+| Phase 6 | Coinbase 디자인 적용 + 빌드 통과 | ✅ 완료 | Claim Page 미완 |
 
 ---
 
