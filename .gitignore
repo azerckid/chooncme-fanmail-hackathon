@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Solmate hook scripts (project-local)
 .claude/hooks/
+
+# Claude Code worktrees
+.claude/worktrees/
