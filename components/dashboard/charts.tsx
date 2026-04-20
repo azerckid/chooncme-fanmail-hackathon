@@ -89,9 +89,9 @@ export function TrendChart({ data7Days, data30Days }: TrendChartProps) {
                     <Line
                         type="monotone"
                         dataKey="count"
-                        stroke="#3b82f6"
+                        stroke="#0052ff"
                         strokeWidth={2}
-                        dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
+                        dot={{ fill: "#0052ff", strokeWidth: 2, r: 4 }}
                         activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
                     />
                 </LineChart>
@@ -101,12 +101,12 @@ export function TrendChart({ data7Days, data30Days }: TrendChartProps) {
 }
 
 const SENTIMENT_COLORS: { [key: string]: string } = {
-    love: "#ff4d94",      // 핫핑크
-    support: "#4d79ff",   // 블루
-    joy: "#ffcc00",       // 옐로우
-    gratitude: "#9966ff", // 퍼플
-    longing: "#ff9933",   // 오렌지
-    sadness: "#669999",   // 민트그레이
+    love: "#0052ff",      // Coinbase Blue
+    support: "#578bfa",   // Coinbase Hover Blue
+    joy: "#0667d0",       // Coinbase Link Blue
+    gratitude: "#282b31", // Coinbase Dark Card
+    longing: "#5b616e",   // Coinbase Muted
+    sadness: "#8892a0",   // Light muted
     concern: "#00cc99",   // 그린티
     neutral: "#eab308",
     positive: "#22c55e",
@@ -248,7 +248,7 @@ export function LanguageChart({ data }: { data: DistributionData }) {
                         borderRadius: "8px",
                     }}
                 />
-                <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="count" fill="#0052ff" radius={[0, 4, 4, 0]} />
             </BarChart>
         </ResponsiveContainer>
     );
