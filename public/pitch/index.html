@@ -174,28 +174,53 @@
     <div style="text-align:center; margin-bottom:48px;">
       <div class="badge">Technology</div>
       <div style="height:24px"></div>
-      <h2>Base 생태계 풀스택 통합</h2>
+      <h2>해커톤 요구 기술 5개 전부 통합</h2>
     </div>
-    <div class="grid-2">
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; width:100%;">
       <div class="card">
-        <h3 style="color:#0052ff; font-size:20px; margin-bottom:16px;">AI Layer</h3>
-        <p style="margin-bottom:8px;"><strong style="color:#fff;">Flock.io</strong> — Web3 Agent LLM</p>
-        <p><strong style="color:#fff;">x402</strong> — M2M 자율 결제 프로토콜</p>
+        <h3 style="color:#0052ff; font-size:17px; margin-bottom:12px;">Flock.io</h3>
+        <p style="font-size:15px; margin-bottom:6px;">팬메일 분류</p>
+        <p style="font-size:15px; margin-bottom:6px;">답장 생성 (한/영/일)</p>
+        <p style="font-size:15px;">x402 자율 결제 연동</p>
       </div>
       <div class="card">
-        <h3 style="color:#578bfa; font-size:20px; margin-bottom:16px;">Blockchain Layer</h3>
-        <p style="margin-bottom:8px;"><strong style="color:#fff;">AgentKit</strong> — 온체인 액션 실행</p>
-        <p><strong style="color:#fff;">Base Sepolia</strong> — ERC-721 NFT</p>
+        <h3 style="color:#578bfa; font-size:17px; margin-bottom:12px;">AgentKit</h3>
+        <p style="font-size:15px; margin-bottom:6px;">에이전트 전용 지갑</p>
+        <p style="font-size:15px; margin-bottom:6px;">Reply NFT 민팅 서명</p>
+        <p style="font-size:15px;">트랜잭션 자율 실행</p>
       </div>
       <div class="card">
-        <h3 style="color:#0667d0; font-size:20px; margin-bottom:16px;">Infrastructure</h3>
-        <p style="margin-bottom:8px;">Gmail API + Nodemailer</p>
-        <p>Turso (SQLite) + Drizzle ORM</p>
+        <h3 style="color:#0667d0; font-size:17px; margin-bottom:12px;">x402</h3>
+        <p style="font-size:15px; margin-bottom:6px;">LLM 추론 비용</p>
+        <p style="font-size:15px; margin-bottom:6px;">에이전트 자율 결제</p>
+        <p style="font-size:15px;">USDC on Base</p>
       </div>
       <div class="card">
-        <h3 style="color:#5b616e; font-size:20px; margin-bottom:16px;">Frontend</h3>
-        <p style="margin-bottom:8px;">Next.js 15 (App Router)</p>
-        <p>Coinbase Design System</p>
+        <h3 style="color:#5b616e; font-size:17px; margin-bottom:12px;">Base</h3>
+        <p style="font-size:15px; margin-bottom:6px;">ERC-721 Reply NFT</p>
+        <p style="font-size:15px; margin-bottom:6px;">Golden / Comfort / Standard 티어</p>
+        <p style="font-size:15px;">NFT 클레임 링크 이메일 삽입</p>
+      </div>
+      <div class="card" style="grid-column: span 2;">
+        <h3 style="color:#fff; font-size:17px; margin-bottom:12px;">Virtuals GAME</h3>
+        <div style="display:flex; gap:24px;">
+          <div>
+            <p style="font-size:14px; color:#0052ff; font-weight:600; margin-bottom:4px;">ClassifierWorker</p>
+            <p style="font-size:14px;">팬메일 분류 에이전트</p>
+          </div>
+          <div>
+            <p style="font-size:14px; color:#578bfa; font-weight:600; margin-bottom:4px;">ReplyWorker</p>
+            <p style="font-size:14px;">답장 생성 에이전트</p>
+          </div>
+          <div>
+            <p style="font-size:14px; color:#0667d0; font-weight:600; margin-bottom:4px;">NFTWorker</p>
+            <p style="font-size:14px;">NFT 민팅 에이전트</p>
+          </div>
+          <div>
+            <p style="font-size:14px; color:#5b616e; font-weight:600; margin-bottom:4px;">GameAgent</p>
+            <p style="font-size:14px;">3개 에이전트 조율</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -259,12 +284,15 @@
 <div class="nav">
   <button onclick="prevSlide()">← Prev</button>
   <span class="slide-num" id="slideNum">1 / 6</span>
+  <!-- slide count auto-calculated by JS -->
   <button onclick="nextSlide()">Next →</button>
 </div>
 
 <script>
   let current = 0;
   const slides = document.querySelectorAll('.slide');
+
+  document.getElementById('slideNum').textContent = `1 / ${slides.length}`;
 
   function showSlide(n) {
     slides[current].classList.remove('active');
