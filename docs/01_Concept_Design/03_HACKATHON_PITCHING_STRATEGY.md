@@ -87,7 +87,30 @@
 
 ---
 
-## 4. Related Documents
+## 4. 기술별 구현 기능 일람
+
+심사위원 질문 대응 및 데모 시연 레퍼런스.
+
+| 기술 | 구현된 기능 | 파일 |
+|:---|:---|:---|
+| **Flock.io** | 팬메일/일반메일 자동 분류 | `lib/llm/client.ts` |
+| | 춘심이 페르소나로 다국어 답장 생성 (한/영/일) | `lib/llm/reply-prompt.ts` |
+| | LLM 추론 비용 x402 자율 결제 연동 | `lib/llm/client.ts` |
+| **AgentKit** | 에이전트 전용 지갑 생성 및 관리 | `lib/blockchain/agentkit.ts` |
+| | 답장을 ERC-721 Reply NFT로 Base Sepolia에 민팅 | `lib/blockchain/nft.ts` |
+| | NFT 민팅 트랜잭션 서명 및 실행 | `lib/blockchain/nft.ts` |
+| **x402** | 에이전트가 Flock.io 추론 비용을 USDC로 자율 온체인 결제 | `lib/blockchain/x402.ts` |
+| **Base** | ERC-721 Reply NFT 온체인 영구 기록 (Base Sepolia) | `lib/blockchain/nft.ts` |
+| | 감정 분석 기반 NFT 티어 분기 (Golden / Comfort / Standard) | `lib/blockchain/nft.ts` |
+| | 팬 이메일에 NFT 클레임 링크 자동 삽입 | `lib/scheduler/process-emails.ts` |
+| **Virtuals GAME** | ClassifierWorker — 팬메일 분류 에이전트 | `lib/agents/workers/classifierWorker.ts` |
+| | ReplyWorker — 답장 생성 에이전트 | `lib/agents/workers/replyWorker.ts` |
+| | NFTWorker — NFT 민팅 에이전트 | `lib/agents/workers/nftWorker.ts` |
+| | GameAgent Orchestrator — 3개 에이전트 순차 조율 | `lib/agents/orchestrator.ts` |
+
+---
+
+## 5. Related Documents
 
 - **기술 명세**: [../03_Technical_Specs/06_HACKATHON_TECH_SPEC.md](../03_Technical_Specs/06_HACKATHON_TECH_SPEC.md)
 - **구현 로드맵**: [../04_Logic_Progress/05_HACKATHON_ROADMAP.md](../04_Logic_Progress/05_HACKATHON_ROADMAP.md)
