@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: [
+    '@coinbase/agentkit',
+    '@coinbase/cdp-sdk',
+    '@coinbase/coinbase-sdk',
+    'viem',
+  ],
 };
 
 export default nextConfig;

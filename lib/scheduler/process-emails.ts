@@ -18,6 +18,7 @@ import {
   scheduleDelayedSend,
   isDryRunMode,
 } from './index';
+import { mintReplyNFT } from '@/lib/blockchain/nft';
 import { eq } from 'drizzle-orm';
 
 /**
@@ -222,17 +223,51 @@ async function processFanLetter(
   result.replyGeneratedCount++;
   log(`  Reply generated: ${replyResult.reply.subject.slice(0, 30)}...`);
 
-  // 3-3. 지연 발송 예약
+  // 3-3. NFT 민팅 (NFT_CONTRACT_ADDRESS 설정 시)
+  let replyBody = replyResult.reply.body;
+  if (process.env.NFT_CONTRACT_ADDRESS) {
+    try {
+      const mintResult = await mintReplyNFT({
+        replyContent: replyResult.reply.body,
+        receivedAt: new Date().toISOString(),
+      });
+      log(`  NFT minted: tier=${mintResult.tier}, claimUrl=${mintResult.claimUrl}`);
+
+      const nftSection = buildNftSection(replyBody, mintResult.claimUrl);
+      replyBody = replyResult.reply.body + nftSection;
+    } catch (nftError) {
+      // 민팅 실패해도 이메일 발송은 계속 진행
+      console.error('[ProcessEmails] NFT mint failed (continuing without NFT):', nftError);
+    }
+  }
+
+  // 3-4. 지연 발송 예약
   const dryRun = isDryRunMode();
   scheduleDelayedSend({
     letterId,
     to: email.fromEmail,
     subject: replyResult.reply.subject,
-    body: replyResult.reply.body,
+    body: replyBody,
   });
 
   result.scheduledCount++;
   log(`  Scheduled${dryRun ? ' (dry-run)' : ''}: to=${email.fromEmail}`);
+}
+
+/**
+ * 이메일 본문에 삽입할 NFT 클레임 섹션 (언어 자동 감지)
+ */
+function buildNftSection(body: string, claimUrl: string): string {
+  const isJapanese = /[\u3040-\u309F\u30A0-\u30FF]/.test(body);
+  const isKorean = /[\uAC00-\uD7A3]/.test(body);
+
+  if (isJapanese) {
+    return `\n\n---\nこの返信はBaseブロックチェーンに永久記録されました。\n確認はこちら: ${claimUrl}`;
+  }
+  if (isKorean) {
+    return `\n\n---\n이 답장은 Base 블록체인에 영구 기록되었습니다.\n확인하기: ${claimUrl}`;
+  }
+  return `\n\n---\nThis reply has been permanently recorded on Base blockchain.\nView it here: ${claimUrl}`;
 }
 
 /**

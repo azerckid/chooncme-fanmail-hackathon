@@ -5,7 +5,7 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export type LLMProvider = 'gemini' | 'openai';
+export type LLMProvider = 'gemini' | 'openai' | 'flock';
 export type LLMTaskType = 'classify' | 'reply';
 
 // 기본 모델 설정
@@ -17,6 +17,10 @@ const DEFAULT_MODELS = {
   openai: {
     classify: 'gpt-4o-mini',
     reply: 'gpt-4o-mini',
+  },
+  flock: {
+    classify: 'flock-web3-agent',
+    reply: 'flock-web3-agent',
   },
 } as const;
 
@@ -48,6 +52,8 @@ export function createLLMClient(config: LLMConfig) {
     return new GeminiClient(config);
   } else if (config.provider === 'openai') {
     return new OpenAIClient(config);
+  } else if (config.provider === 'flock') {
+    return new OpenAIClient(config, process.env.FLOCK_BASE_URL);
   }
   throw new Error(`Unsupported LLM provider: ${config.provider}`);
 }
@@ -59,8 +65,19 @@ export function createLLMClient(config: LLMConfig) {
 export function createLLMClientFromEnv(
   taskType: LLMTaskType = 'reply'
 ): ReturnType<typeof createLLMClient> {
+  const flockKey = process.env.FLOCK_API_KEY;
   const geminiKey = process.env.GOOGLE_GEMINI_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
+
+  // Flock.io 최우선 (해커톤)
+  if (flockKey) {
+    const model = process.env.FLOCK_MODEL || DEFAULT_MODELS.flock[taskType];
+    return createLLMClient({
+      provider: 'flock',
+      apiKey: flockKey,
+      model,
+    });
+  }
 
   if (geminiKey) {
     const model = getModelForTask('gemini', taskType);
@@ -80,7 +97,7 @@ export function createLLMClientFromEnv(
     });
   }
 
-  throw new Error('No LLM API key found. Set GOOGLE_GEMINI_API_KEY or OPENAI_API_KEY');
+  throw new Error('No LLM API key found. Set FLOCK_API_KEY, GOOGLE_GEMINI_API_KEY, or OPENAI_API_KEY');
 }
 
 /**
@@ -93,6 +110,10 @@ function getModelForTask(provider: LLMProvider, taskType: LLMTaskType): string {
       return process.env.GEMINI_CLASSIFY_MODEL || DEFAULT_MODELS.gemini.classify;
     }
     return process.env.GEMINI_REPLY_MODEL || DEFAULT_MODELS.gemini.reply;
+  }
+
+  if (provider === 'flock') {
+    return process.env.FLOCK_MODEL || DEFAULT_MODELS.flock[taskType];
   }
 
   // OpenAI
@@ -157,11 +178,12 @@ class GeminiClient {
 class OpenAIClient {
   private apiKey: string;
   private model: string;
-  private baseUrl = 'https://api.openai.com/v1';
+  private baseUrl: string;
 
-  constructor(config: LLMConfig) {
+  constructor(config: LLMConfig, baseUrl?: string) {
     this.apiKey = config.apiKey;
     this.model = config.model || 'gpt-4o-mini';
+    this.baseUrl = baseUrl || 'https://api.openai.com/v1';
   }
 
   async chat(systemPrompt: string, userPrompt: string): Promise<LLMResponse> {
