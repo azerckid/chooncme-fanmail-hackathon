@@ -53,7 +53,8 @@ export function createLLMClient(config: LLMConfig) {
   } else if (config.provider === 'openai') {
     return new OpenAIClient(config);
   } else if (config.provider === 'flock') {
-    return new OpenAIClient(config, process.env.FLOCK_BASE_URL);
+    const useX402 = process.env.X402_ENABLED === 'true';
+    return new OpenAIClient(config, process.env.FLOCK_BASE_URL, useX402);
   }
   throw new Error(`Unsupported LLM provider: ${config.provider}`);
 }
@@ -173,21 +174,34 @@ class GeminiClient {
 }
 
 /**
- * OpenAI 클라이언트
+ * OpenAI 클라이언트 (Flock.io 포함)
  */
 class OpenAIClient {
   private apiKey: string;
   private model: string;
   private baseUrl: string;
+  private useX402: boolean;
 
-  constructor(config: LLMConfig, baseUrl?: string) {
+  constructor(config: LLMConfig, baseUrl?: string, useX402 = false) {
     this.apiKey = config.apiKey;
     this.model = config.model || 'gpt-4o-mini';
     this.baseUrl = baseUrl || 'https://api.openai.com/v1';
+    this.useX402 = useX402;
   }
 
   async chat(systemPrompt: string, userPrompt: string): Promise<LLMResponse> {
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
+    // x402 활성화 시 자율 결제 fetch 사용
+    let fetchFn: typeof fetch = globalThis.fetch;
+    if (this.useX402) {
+      try {
+        const { getX402Fetch } = await import('@/lib/blockchain/x402');
+        fetchFn = await getX402Fetch();
+      } catch (e) {
+        console.warn('[x402] Failed to initialize payment fetch, using standard fetch:', e);
+      }
+    }
+
+    const response = await fetchFn(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
