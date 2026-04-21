@@ -77,13 +77,16 @@ export async function processWithGame(
     const reply = JSON.parse(replyRes.feedback ?? '{}');
     if (!reply.body) return null;
 
+    log(`Emotional tone from reply plan: ${reply.emotional_tone}`);
+
     // 3단계: NFTWorker — Reply NFT 민팅
+    // emotional_tone은 ReplyWorker의 2단계 계획에서 추출한 값 사용
     const nftFn = nftWorker.functions[0];
     const nftRes = await nftFn.execute(
       {
         reply_content: { value: reply.body },
         received_at: { value: new Date().toISOString() },
-        emotional_tone: { value: classification.emotional_tone ?? 'neutral' },
+        emotional_tone: { value: reply.emotional_tone ?? 'neutral' },
       },
       log
     );
