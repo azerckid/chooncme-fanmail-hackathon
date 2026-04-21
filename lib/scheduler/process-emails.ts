@@ -19,6 +19,7 @@ import {
   isDryRunMode,
 } from './index';
 import { mintReplyNFT } from '@/lib/blockchain/nft';
+import { processWithGame, isGameEnabled } from '@/lib/agents/orchestrator';
 import { eq } from 'drizzle-orm';
 
 /**
@@ -207,37 +208,54 @@ async function processFanLetter(
     return;
   }
 
-  // 3-2. 답장 생성
+  // 3-2. 답장 생성 (GAME Orchestrator 우선, 폴백 시 기존 파이프라인)
   if (replyDelayMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, replyDelayMs));
   }
 
-  const replyResult = await generateReplyFromEmail(email);
+  let replySubject = '';
+  let replyBody = '';
 
-  if (!replyResult.success || !replyResult.reply) {
-    result.errorCount++;
-    log(`  Reply generation failed: ${replyResult.error}`);
-    return;
-  }
+  // GAME Orchestrator 사용 시도
+  const gameResult = isGameEnabled() ? await processWithGame(email) : null;
 
-  result.replyGeneratedCount++;
-  log(`  Reply generated: ${replyResult.reply.subject.slice(0, 30)}...`);
+  if (gameResult?.replyBody) {
+    replySubject = gameResult.replySubject ?? `Re: ${email.subject}`;
+    replyBody = gameResult.replyBody;
+    result.replyGeneratedCount++;
+    log(`  [GAME] Reply generated: ${replySubject.slice(0, 30)}...`);
 
-  // 3-3. NFT 민팅 (NFT_CONTRACT_ADDRESS 설정 시)
-  let replyBody = replyResult.reply.body;
-  if (process.env.NFT_CONTRACT_ADDRESS) {
-    try {
-      const mintResult = await mintReplyNFT({
-        replyContent: replyResult.reply.body,
-        receivedAt: new Date().toISOString(),
-      });
-      log(`  NFT minted: tier=${mintResult.tier}, claimUrl=${mintResult.claimUrl}`);
+    // GAME이 claimUrl 반환 시 이메일에 삽입
+    if (gameResult.claimUrl) {
+      replyBody += buildNftSection(replyBody, gameResult.claimUrl);
+    }
+  } else {
+    // 기존 파이프라인 폴백
+    const replyResult = await generateReplyFromEmail(email);
 
-      const nftSection = buildNftSection(replyBody, mintResult.claimUrl);
-      replyBody = replyResult.reply.body + nftSection;
-    } catch (nftError) {
-      // 민팅 실패해도 이메일 발송은 계속 진행
-      console.error('[ProcessEmails] NFT mint failed (continuing without NFT):', nftError);
+    if (!replyResult.success || !replyResult.reply) {
+      result.errorCount++;
+      log(`  Reply generation failed: ${replyResult.error}`);
+      return;
+    }
+
+    replySubject = replyResult.reply.subject;
+    replyBody = replyResult.reply.body;
+    result.replyGeneratedCount++;
+    log(`  Reply generated: ${replySubject.slice(0, 30)}...`);
+
+    // 3-3. NFT 민팅 (NFT_CONTRACT_ADDRESS 설정 시)
+    if (process.env.NFT_CONTRACT_ADDRESS) {
+      try {
+        const mintResult = await mintReplyNFT({
+          replyContent: replyBody,
+          receivedAt: new Date().toISOString(),
+        });
+        log(`  NFT minted: tier=${mintResult.tier}, claimUrl=${mintResult.claimUrl}`);
+        replyBody += buildNftSection(replyBody, mintResult.claimUrl);
+      } catch (nftError) {
+        console.error('[ProcessEmails] NFT mint failed (continuing without NFT):', nftError);
+      }
     }
   }
 
@@ -246,7 +264,7 @@ async function processFanLetter(
   scheduleDelayedSend({
     letterId,
     to: email.fromEmail,
-    subject: replyResult.reply.subject,
+    subject: replySubject,
     body: replyBody,
   });
 

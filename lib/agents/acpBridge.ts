@@ -29,7 +29,7 @@ import {
 export function isAcpEnabled(): boolean {
   return (
     process.env.ACP_ENABLED === 'true' &&
-    !!process.env.AGENT_WALLET_PRIVATE_KEY
+    !!process.env.ACP_WALLET_PRIVATE_KEY  // AgentKit의 CDP 키와 별도 관리
   );
 }
 
@@ -38,11 +38,14 @@ let acpClient: AcpClient | null = null;
 export async function getAcpClient(): Promise<AcpClient> {
   if (acpClient) return acpClient;
 
-  const privateKey = process.env.AGENT_WALLET_PRIVATE_KEY as `0x${string}`;
+  // ACP는 AgentKit(CDP OAuth)과 독립적인 raw private key 방식 사용
+  // AgentKit: CDP_API_KEY_ID + CDP_API_KEY_SECRET
+  // ACP:      ACP_WALLET_PRIVATE_KEY (동일 또는 별도 지갑 가능)
+  const privateKey = process.env.ACP_WALLET_PRIVATE_KEY as `0x${string}`;
   const agentAddress = process.env.AGENT_WALLET_ADDRESS as `0x${string}`;
 
   if (!privateKey || !agentAddress) {
-    throw new Error('AGENT_WALLET_PRIVATE_KEY and AGENT_WALLET_ADDRESS are required for ACP');
+    throw new Error('ACP_WALLET_PRIVATE_KEY and AGENT_WALLET_ADDRESS are required for ACP');
   }
 
   // AcpContractClientV2: Base Sepolia + x402 결제 설정
