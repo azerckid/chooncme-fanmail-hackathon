@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { fanLetters, replies } from "@/db/schema";
-import { eq, and, or, like, desc, sql } from "drizzle-orm";
+import { eq, and, or, like, desc, sql, count } from "drizzle-orm";
 import {
     Card,
     CardContent
@@ -49,11 +49,12 @@ async function getLetters(searchParams: { [key: string]: string | undefined }) {
         sentiment: fanLetters.sentiment,
         isRead: fanLetters.isRead,
         isStarred: fanLetters.isStarred,
-        hasReply: sql<boolean>`case when ${replies.id} is not null then 1 else 0 end`,
+        hasReply: sql<boolean>`case when count(${replies.id}) > 0 then 1 else 0 end`,
     })
         .from(fanLetters)
         .leftJoin(replies, eq(fanLetters.id, replies.letterId))
         .where(whereClause)
+        .groupBy(fanLetters.id)
         .orderBy(desc(fanLetters.receivedAt))
         .limit(50);
 
@@ -90,16 +91,21 @@ export default async function LettersPage({
                     <p className="text-neutral-500">팬들의 소중한 메시지를 관리합니다.</p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <form method="GET" className="flex items-center gap-2">
                     <div className="relative w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                        <Input placeholder="이름, 내용 검색..." className="pl-10" />
+                        <Input
+                            name="search"
+                            placeholder="이름, 내용 검색..."
+                            className="pl-10"
+                            defaultValue={resolvedSearchParams.search ?? ""}
+                        />
                     </div>
-                    <Button variant="outline" className="gap-2">
+                    <Button type="submit" variant="outline" className="gap-2">
                         <Filter className="w-4 h-4" />
-                        필터
+                        검색
                     </Button>
-                </div>
+                </form>
             </div>
 
             <div className="grid gap-4">

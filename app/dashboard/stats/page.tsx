@@ -27,6 +27,7 @@ async function getDetailedStats() {
             total: sql<number>`count(*)`,
             unread: sql<number>`sum(case when is_read = 0 then 1 else 0 end)`,
             starred: sql<number>`sum(case when is_starred = 1 then 1 else 0 end)`,
+            replied: sql<number>`sum(case when is_replied = 1 then 1 else 0 end)`,
         }).from(fanLetters);
 
         // 언어별 상세 분포
@@ -80,6 +81,7 @@ async function getDetailedStats() {
                 total: counts[0]?.total || 0,
                 unread: Number(counts[0]?.unread || 0),
                 starred: Number(counts[0]?.starred || 0),
+                replied: Number(counts[0]?.replied || 0),
                 thisMonth: thisMonthCount[0]?.count || 0,
             },
             byLanguage: Object.fromEntries(byLanguage.map(x => [x.language || "unknown", x.count])),
@@ -178,7 +180,7 @@ export default async function StatsPage() {
                         <CardDescription>평균 답장율</CardDescription>
                         <CardTitle className="text-3xl">
                             {stats.summary.total > 0
-                                ? Math.round(((stats.summary.total - stats.summary.unread) / stats.summary.total) * 100)
+                                ? Math.round((stats.summary.replied / stats.summary.total) * 100)
                                 : 0}%
                         </CardTitle>
                     </CardHeader>

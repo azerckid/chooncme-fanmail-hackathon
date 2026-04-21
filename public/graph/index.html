@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>Creator Agent Platform — Architecture Graph</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0b0d; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  svg { display: block; }
+
+  .node rect { rx: 10; ry: 10; }
+  .node text { font-size: 13px; font-weight: 600; fill: #fff; text-anchor: middle; dominant-baseline: middle; }
+  .node .sub { font-size: 11px; font-weight: 400; fill: rgba(255,255,255,0.6); }
+
+  .edge { fill: none; stroke-width: 1.5; marker-end: url(#arrow); }
+  .edge-label { font-size: 11px; fill: #5b616e; text-anchor: middle; }
+
+  .group rect { rx: 16; ry: 16; fill: none; stroke-dasharray: 4,3; stroke-width: 1; }
+  .group-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1100 700" width="100%" height="100vh" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5b616e" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0052ff" />
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#22c55e" />
+    </marker>
+  </defs>
+
+  <!-- ─── GROUP: 입력 ─── -->
+  <g class="group">
+    <rect x="20" y="290" width="120" height="120" stroke="#5b616e" opacity="0.3"/>
+    <text class="group-label" x="80" y="278" fill="#5b616e">INPUT</text>
+  </g>
+
+  <!-- Node: 팬 이메일 -->
+  <g class="node" transform="translate(80,350)">
+    <rect x="-50" y="-28" width="100" height="56" fill="#282b31" stroke="#5b616e" stroke-width="1"/>
+    <text y="-8">팬 이메일</text>
+    <text class="sub" y="10">Gmail</text>
+  </g>
+
+  <!-- ─── GROUP: GAME + ACP Orchestrator ─── -->
+  <g class="group">
+    <rect x="170" y="60" width="760" height="580" stroke="#0052ff" opacity="0.25"/>
+    <text class="group-label" x="550" y="48" fill="#0052ff" text-anchor="middle">VIRTUALS GAME + ACP ORCHESTRATOR</text>
+  </g>
+
+  <!-- Node: GameAgent -->
+  <g class="node" transform="translate(340,350)">
+    <rect x="-80" y="-32" width="160" height="64" fill="#0052ff" stroke="#578bfa" stroke-width="1.5"/>
+    <text y="-10">GameAgent</text>
+    <text class="sub" y="10">Orchestrator</text>
+  </g>
+
+  <!-- ─── GROUP: ClassifierWorker ─── -->
+  <g class="group">
+    <rect x="480" y="90" width="200" height="140" stroke="#578bfa" opacity="0.3"/>
+    <text class="group-label" x="580" y="80" fill="#578bfa" text-anchor="middle">ClassifierWorker</text>
+  </g>
+
+  <!-- Node: classify_fan_email -->
+  <g class="node" transform="translate(580,165)">
+    <rect x="-80" y="-28" width="160" height="56" fill="#141518" stroke="#578bfa" stroke-width="1"/>
+    <text y="-8">classify_fan_email</text>
+    <text class="sub" y="10">fan | general</text>
+  </g>
+
+  <!-- ─── GROUP: ReplyWorker ─── -->
+  <g class="group">
+    <rect x="480" y="270" width="200" height="160" stroke="#0667d0" opacity="0.3"/>
+    <text class="group-label" x="580" y="260" fill="#0667d0" text-anchor="middle">ReplyWorker</text>
+  </g>
+
+  <!-- Node: Plan (감정분석) -->
+  <g class="node" transform="translate(580,330)">
+    <rect x="-80" y="-24" width="160" height="48" fill="#141518" stroke="#0667d0" stroke-width="1"/>
+    <text y="-6">감정 분석 (Plan)</text>
+    <text class="sub" y="12">emotional_tone</text>
+  </g>
+
+  <!-- Node: generate_fan_reply -->
+  <g class="node" transform="translate(580,400)">
+    <rect x="-80" y="-24" width="160" height="48" fill="#141518" stroke="#0667d0" stroke-width="1"/>
+    <text y="-6">generate_fan_reply</text>
+    <text class="sub" y="12">subject + body</text>
+  </g>
+
+  <!-- ─── GROUP: NFTWorker ─── -->
+  <g class="group">
+    <rect x="480" y="465" width="200" height="140" stroke="#22c55e" opacity="0.25"/>
+    <text class="group-label" x="580" y="455" fill="#22c55e" text-anchor="middle">NFTWorker</text>
+  </g>
+
+  <!-- Node: getTierFromEmotion -->
+  <g class="node" transform="translate(580,520)">
+    <rect x="-80" y="-24" width="160" height="48" fill="#141518" stroke="#22c55e" stroke-width="1"/>
+    <text y="-6">getTierFromEmotion</text>
+    <text class="sub" y="12">Golden/Comfort/Standard</text>
+  </g>
+
+  <!-- Node: mint_reply_nft -->
+  <g class="node" transform="translate(580,580)">
+    <rect x="-80" y="-24" width="160" height="48" fill="#141518" stroke="#22c55e" stroke-width="1"/>
+    <text y="-6">mint_reply_nft</text>
+    <text class="sub" y="12">AgentKit + viem</text>
+  </g>
+
+  <!-- ─── GROUP: 외부 서비스 ─── -->
+  <g class="group">
+    <rect x="760" y="90" width="160" height="580" stroke="#5b616e" opacity="0.2"/>
+    <text class="group-label" x="840" y="80" fill="#5b616e" text-anchor="middle">EXTERNAL</text>
+  </g>
+
+  <!-- Node: Flock.io -->
+  <g class="node" transform="translate(840,200)">
+    <rect x="-60" y="-28" width="120" height="56" fill="#1a1f35" stroke="#578bfa" stroke-width="1"/>
+    <text y="-8">Flock.io</text>
+    <text class="sub" y="10">Web3 LLM</text>
+  </g>
+
+  <!-- Node: Base Sepolia -->
+  <g class="node" transform="translate(840,400)">
+    <rect x="-60" y="-28" width="120" height="56" fill="#0a1628" stroke="#0052ff" stroke-width="1"/>
+    <text y="-8">Base Sepolia</text>
+    <text class="sub" y="10">ERC-721</text>
+  </g>
+
+  <!-- Node: x402 -->
+  <g class="node" transform="translate(840,530)">
+    <rect x="-60" y="-28" width="120" height="56" fill="#141518" stroke="#5b616e" stroke-width="1"/>
+    <text y="-8">x402</text>
+    <text class="sub" y="10">USDC 자율 결제</text>
+  </g>
+
+  <!-- ─── OUTPUT ─── -->
+  <g class="group">
+    <rect x="960" y="270" width="120" height="160" stroke="#5b616e" opacity="0.3"/>
+    <text class="group-label" x="1020" y="258" fill="#5b616e" text-anchor="middle">OUTPUT</text>
+  </g>
+
+  <!-- Node: 답장 이메일 -->
+  <g class="node" transform="translate(1020,320)">
+    <rect x="-50" y="-24" width="100" height="48" fill="#282b31" stroke="#5b616e" stroke-width="1"/>
+    <text y="-6">답장 이메일</text>
+    <text class="sub" y="10">+ 클레임 링크</text>
+  </g>
+
+  <!-- Node: Reply NFT -->
+  <g class="node" transform="translate(1020,400)">
+    <rect x="-50" y="-24" width="100" height="48" fill="#0a1628" stroke="#0052ff" stroke-width="1"/>
+    <text y="-6">Reply NFT</text>
+    <text class="sub" y="10">온체인 기록</text>
+  </g>
+
+  <!-- ═══════════════════ EDGES ═══════════════════ -->
+
+  <!-- 팬 이메일 → GameAgent -->
+  <path class="edge" d="M 130,350 L 260,350" stroke="#5b616e" marker-end="url(#arrow)"/>
+  <text class="edge-label" x="195" y="340">이메일</text>
+
+  <!-- GameAgent → ClassifierWorker -->
+  <path class="edge" d="M 390,318 Q 430,240 480,200 L 498,180" stroke="#578bfa" marker-end="url(#arrow-blue)"/>
+  <text class="edge-label" x="435" y="255">classify</text>
+
+  <!-- GameAgent → ReplyWorker -->
+  <path class="edge" d="M 420,350 L 498,350" stroke="#0667d0" marker-end="url(#arrow)"/>
+  <text class="edge-label" x="460" y="342">reply</text>
+
+  <!-- GameAgent → NFTWorker (emotional_tone) -->
+  <path class="edge" d="M 390,382 Q 430,460 480,510 L 498,510" stroke="#22c55e" marker-end="url(#arrow-green)"/>
+  <text class="edge-label" x="432" y="475">emotional_tone</text>
+
+  <!-- ClassifierWorker → Flock.io -->
+  <path class="edge" d="M 660,165 Q 720,165 760,195 L 778,195" stroke="#578bfa" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
+  <text class="edge-label" x="720" y="157">LLM 분류</text>
+
+  <!-- Plan (감정분석) → Flock.io -->
+  <path class="edge" d="M 660,330 Q 720,300 760,250 L 778,220" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+  <!-- generate_fan_reply → Flock.io -->
+  <path class="edge" d="M 660,400 Q 730,370 760,250 L 778,230" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <text class="edge-label" x="726" y="320">LLM 생성</text>
+
+  <!-- Plan → generate (내부 흐름) -->
+  <path class="edge" d="M 580,354 L 580,374" stroke="#0667d0" marker-end="url(#arrow)"/>
+  <text class="edge-label" x="620" y="367">emotional_tone</text>
+
+  <!-- getTierFromEmotion → mint_reply_nft (내부 흐름) -->
+  <path class="edge" d="M 580,544 L 580,554" stroke="#22c55e" marker-end="url(#arrow-green)"/>
+  <text class="edge-label" x="630" y="552">tier</text>
+
+  <!-- mint_reply_nft → Base Sepolia -->
+  <path class="edge" d="M 660,580 Q 720,520 760,430 L 778,415" stroke="#22c55e" marker-end="url(#arrow-green)"/>
+  <text class="edge-label" x="723" y="503">NFT 민팅</text>
+
+  <!-- mint_reply_nft → x402 -->
+  <path class="edge" d="M 660,580 Q 710,555 760,545 L 778,540" stroke="#5b616e" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <text class="edge-label" x="714" y="571">USDC 결제</text>
+
+  <!-- generate_fan_reply → 답장 이메일 -->
+  <path class="edge" d="M 660,400 Q 820,370 960,330 L 968,322" stroke="#5b616e" marker-end="url(#arrow)"/>
+  <text class="edge-label" x="815" y="352">이메일 발송</text>
+
+  <!-- Base Sepolia → Reply NFT -->
+  <path class="edge" d="M 900,400 L 968,400" stroke="#0052ff" marker-end="url(#arrow-blue)"/>
+  <text class="edge-label" x="935" y="392">온체인</text>
+
+  <!-- Reply NFT → 답장 이메일 (클레임 링크) -->
+  <path class="edge" d="M 1020,374 L 1020,344" stroke="#0052ff" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
+  <text class="edge-label" x="1058" y="361">클레임 URL</text>
+
+  <!-- ═══ 범례 ═══ -->
+  <g transform="translate(30, 560)">
+    <text font-size="12" fill="#5b616e" font-weight="700">범례</text>
+    <line x1="0" y1="20" x2="30" y2="20" stroke="#578bfa" stroke-width="1.5"/>
+    <text font-size="11" fill="#5b616e" x="35" y="24">GAME Worker 호출</text>
+    <line x1="0" y1="40" x2="30" y2="40" stroke="#22c55e" stroke-width="1.5"/>
+    <text font-size="11" fill="#5b616e" x="35" y="44">감정 → NFT 티어</text>
+    <line x1="0" y1="60" x2="30" y2="60" stroke="#5b616e" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text font-size="11" fill="#5b616e" x="35" y="64">외부 API 호출</text>
+    <line x1="0" y1="80" x2="30" y2="80" stroke="#0052ff" stroke-width="1.5"/>
+    <text font-size="11" fill="#5b616e" x="35" y="84">온체인 트랜잭션</text>
+  </g>
+</svg>
+</body>
+</html>

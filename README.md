@@ -1,227 +1,172 @@
-# 춘심이 팬메일 자동 응답 시스템
+# Creator Agent Platform — on Base
 
-아이돌 지망생 '춘심이'가 팬들에게 받은 편지에 AI로 자동 답장하는 시스템입니다.
+> 모든 크리에이터가 자신만의 AI 팬 에이전트를 Base 위에 배포할 수 있는 플랫폼.
+> 춘심이(K-pop trainee)는 첫 번째 인스턴스입니다.
 
-## 주요 기능
+**Base Agent Hackathon #1** 출전작 | 2026-04-25
 
-- **이메일 자동 수집**: Gmail API를 통해 1시간마다 새 이메일 확인
-- **팬메일 분류**: LLM이 팬메일과 일반 메일(광고, 스팸 등)을 자동 분류
-- **AI 답장 생성**: 춘심이 페르소나로 정성스러운 답장 자동 생성
-- **다국어 지원**: 팬레터 언어에 맞춰 한국어/영어/일본어 등으로 답장
-- **지연 발송**: 자연스러운 응답을 위해 10~30분 랜덤 지연 후 발송
-- **팔로업 자동화**: 답장이 없는 팬에게 1주 → 2주 → 4주 → 8주 간격으로 재연락
+---
 
-## 시스템 흐름
+## Architecture
 
 ```
-Gmail 수신함
+팬 이메일
     │
-    ▼ (1시간마다 Cron)
-새 이메일 수집 ──→ 팬메일 분류 (LLM)
-                      │
-              ┌───────┴───────┐
-              ▼               ▼
-          [팬메일]        [일반메일]
-              │               │
-              ▼               ▼
-          DB 저장           무시
-              │
-              ▼
-         답장 생성 (LLM)
-              │
-              ▼
-      10~30분 지연 후 발송
-              │
-              ▼
-       팔로업 예약 (1주 후)
+    ▼
+Gmail API (수집)
+    │
+    ▼
+Flock.io LLM ──(x402 자율 결제)──▶ AgentKit 지갑 (Base Sepolia)
+(분류 + 답장 생성)                        │
+    │                            감정 분석 기반 NFT 민팅
+    │                            ├── Golden Reply NFT  (love/support/joy)
+    │                            ├── Comfort Reply NFT (longing/sadness)
+    │                            └── Standard Reply NFT (neutral)
+    │                                     │
+    ▼                                     ▼
+답장 이메일 발송 ◀────── NFT 클레임 링크 생성
+    │
+    ▼
+팬 수신함: 답장 + "Base에서 내 Reply NFT 확인하기" 링크
 ```
 
-## 기술 스택
+---
 
-| 영역 | 기술 |
-|------|------|
-| 프레임워크 | Next.js 15 (App Router) |
-| 데이터베이스 | Turso (SQLite) + Drizzle ORM |
-| LLM | Google Gemini |
-| 이메일 | Gmail API (OAuth2) |
-| 스케줄러 | Vercel Cron |
-| 언어 | TypeScript |
+## Tech Stack
 
-## 프로젝트 구조
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js (App Router) |
+| Database | Turso (SQLite) + Drizzle ORM |
+| LLM | Flock.io Web3 Agent Model |
+| Email | Gmail API (OAuth2) |
+| Blockchain | Base Sepolia (ERC-721) |
+| Agent Wallet | Coinbase AgentKit (CdpEvmWalletProvider) |
+| Payment | x402 Protocol (M2M autonomous payment) |
+| Scheduler | Vercel Cron |
 
-```
-├── app/
-│   ├── api/
-│   │   └── cron/
-│   │       └── check-email/     # 이메일 처리 Cron 엔드포인트
-│   └── dashboard/               # 관리 대시보드
-├── db/
-│   └── schema.ts                # 데이터베이스 스키마
-├── lib/
-│   ├── email/
-│   │   ├── gmail.ts             # Gmail API 클라이언트
-│   │   ├── classify.ts          # 이메일 분류
-│   │   └── archive.ts           # 팬메일 DB 저장
-│   ├── llm/
-│   │   ├── classify-prompt.ts   # 분류 프롬프트
-│   │   ├── reply-prompt.ts      # 답장 프롬프트
-│   │   └── followup-prompt.ts   # 팔로업 프롬프트
-│   ├── scheduler/
-│   │   ├── process-emails.ts    # 이메일 처리 파이프라인
-│   │   ├── reply-generator.ts   # 답장 생성
-│   │   ├── delayed-send.ts      # 지연 발송
-│   │   ├── follow-up.ts         # 팔로업 스케줄링
-│   │   └── process-followups.ts # 팔로업 처리
-│   └── mail.ts                  # 메일 발송
-└── docs/
-    ├── features/                # 기능 명세
-    └── roadmap/                 # 구현 계획
-```
+---
 
-## 데이터베이스 스키마
+## Key Features
 
-### fan_letters (팬메일)
-| 컬럼 | 설명 |
-|------|------|
-| id | Primary Key |
-| sender_name | 발신자 이름 |
-| sender_email | 발신자 이메일 |
-| subject | 제목 |
-| content | 본문 |
-| is_replied | 답장 여부 |
-| received_at | 수신 시각 |
+- **AI Fan Reply** — Flock.io LLM이 춘심이 페르소나로 팬레터에 자동 답장
+- **Reply NFT Minting** — AgentKit이 답장을 ERC-721 NFT로 Base에 영구 기록
+- **Emotion-Based Tier** — 감정 분석 결과에 따라 Golden / Comfort / Standard NFT 자동 결정
+- **Autonomous Payment** — 에이전트가 LLM 추론 비용을 x402로 자율 온체인 결제 (Phase 3)
+- **Multi-language** — 팬레터 언어(한/영/일)에 맞춰 자동 답장
+- **Follow-up** — 1주 → 2주 → 4주 → 8주 자동 팔로업
+- **Demo Mode** — `DEMO_MODE=true` 시 즉시 처리 (지연 0~30초)
 
-### replies (답장)
-| 컬럼 | 설명 |
-|------|------|
-| id | Primary Key |
-| letter_id | FK → fan_letters |
-| content | 답장 내용 |
-| email_sent | 발송 여부 |
-| email_sent_at | 발송 시각 |
+---
 
-### follow_ups (팔로업)
-| 컬럼 | 설명 |
-|------|------|
-| id | Primary Key |
-| reply_id | FK → replies |
-| sender_email | 팬 이메일 |
-| follow_up_count | 발송 횟수 |
-| next_follow_up_at | 다음 팔로업 예정일 |
-| status | pending / completed / cancelled |
+## Traction
 
-## 환경 변수
+- X(Twitter) 팬덤 **33,000명**
+- 런칭 1개월 만에 **23명의 코어 팬과 228통의 팬레터** 교환 완료
+- 이미 프로덕션 수준의 파이프라인이 실제로 작동 중
 
-`.env.local` 파일에 다음 변수들을 설정하세요:
+---
 
-```env
-# Database (Turso)
-DATABASE_URL=libsql://your-db.turso.io
-DATABASE_AUTH_TOKEN=your-token
-
-# Gmail OAuth2
-GMAIL_USER=your-email@gmail.com
-GOOGLE_CLIENT_ID=your-client-id
-GOOGLE_CLIENT_SECRET=your-client-secret
-GOOGLE_REFRESH_TOKEN=your-refresh-token
-
-# LLM (Gemini)
-GOOGLE_GEMINI_API_KEY=your-api-key
-
-# Optional
-REPLY_DELAY_MIN=10          # 최소 지연 (분)
-REPLY_DELAY_MAX=30          # 최대 지연 (분)
-EMAIL_DRY_RUN=false         # 테스트 모드 (실제 발송 안함)
-FOLLOWUP_ENABLED=true       # 팔로업 활성화
-```
-
-## 시작하기
-
-### 1. 의존성 설치
+## Quick Start
 
 ```bash
 npm install
-```
-
-### 2. 환경 변수 설정
-
-```bash
-cp .env.example .env.local
-# .env.local 파일 편집
-```
-
-### 3. 데이터베이스 마이그레이션
-
-```bash
-npm run db:generate
+cp .env.example .env.local   # 환경변수 설정
 npm run db:migrate
-```
-
-### 4. 개발 서버 실행
-
-```bash
 npm run dev
 ```
 
-[http://localhost:3000](http://localhost:3000)에서 대시보드를 확인할 수 있습니다.
+### Demo Mode (해커톤 시연용)
 
-## Cron 설정
+```bash
+# .env.local
+DEMO_MODE=true
 
-### Vercel Cron (프로덕션)
+# 이메일 처리 즉시 트리거
+curl -X POST http://localhost:3000/api/demo/trigger \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
 
-`vercel.json`:
-```json
-{
-  "crons": [
-    {
-      "path": "/api/cron/check-email",
-      "schedule": "0 * * * *"
-    }
-  ]
+---
+
+## Environment Variables
+
+```env
+# Database
+DATABASE_URL=libsql://your-db.turso.io
+DATABASE_AUTH_TOKEN=
+
+# Gmail
+GMAIL_USER=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REFRESH_TOKEN=
+
+# LLM — Flock.io (우선) / Gemini (폴백)
+FLOCK_API_KEY=
+FLOCK_BASE_URL=
+GOOGLE_GEMINI_API_KEY=
+
+# Coinbase AgentKit
+CDP_API_KEY_ID=
+CDP_API_KEY_SECRET=
+AGENT_WALLET_ADDRESS=      # 재시작 시 동일 지갑 복구
+
+# NFT
+NFT_CONTRACT_ADDRESS=      # Base Sepolia ERC-721
+BASE_NETWORK=base-sepolia
+NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
+
+# Demo
+DEMO_MODE=false
+CRON_SECRET=
+
+# Optional
+REPLY_DELAY_MIN=10
+REPLY_DELAY_MAX=30
+EMAIL_DRY_RUN=false
+FOLLOWUP_ENABLED=true
+```
+
+---
+
+## NFT Contract (ERC-721)
+
+```solidity
+// contracts/ReplyNFT.sol
+contract ReplyNFT is ERC721URIStorage, Ownable {
+    function mintTo(address recipient, string memory tokenURI)
+        external onlyOwner returns (uint256)
 }
 ```
 
-### 수동 실행
+Deploy on Base Sepolia via [Remix IDE](https://remix.ethereum.org).
+Contract owner must match AgentKit wallet address.
 
-```bash
-curl http://localhost:3000/api/cron/check-email
+---
+
+## Project Structure
+
+```
+lib/
+  blockchain/
+    agentkit.ts     # CdpEvmWalletProvider singleton
+    nft.ts          # Reply NFT minting (tier-based)
+  llm/
+    client.ts       # Flock.io / Gemini / OpenAI multi-provider
+  scheduler/
+    process-emails.ts   # Main pipeline (fetch → classify → reply → mint)
+    delayed-send.ts     # DEMO_MODE delay control
+app/
+  api/
+    cron/check-email/   # Hourly cron trigger
+    demo/trigger/       # Instant trigger for demo
+  dashboard/            # Admin UI (Coinbase design)
+  claim/[id]/           # NFT claim page (WIP)
 ```
 
-## 팬메일 분류 기준
+---
 
-### 팬메일로 분류
-- 응원, 사랑, 감사의 메시지
-- "좋아해요", "응원해요", "팬이에요" 등의 표현
-- 공연, 영상, 활동에 대한 감상
-- 팬아트, 팬레터임을 명시한 경우
+## Closing
 
-### 일반 메일로 분류
-- 광고, 스팸, 뉴스레터
-- 비즈니스 문의, 협업 제안
-- 시스템 알림, 자동 발송 메일
-
-## 답장 생성 가이드라인
-
-- 21세 한국 여자 아이돌 지망생 '춘심이' 페르소나
-- 애교 있고 친절한 톤
-- 팬 이름을 직접 호명하여 1:1 소통 느낌
-- 아이돌 지망생 일상 (노래, 춤 연습 등) 언급
-- 팬레터 언어와 동일한 언어로 답장
-- 민감한 내용은 순수하게 넘기기
-
-## 팔로업 시스템
-
-팬이 답장을 보내지 않을 경우 자동으로 팔로업 메일 발송:
-
-| 순서 | 간격 | 톤 |
-|------|------|-----|
-| 1번째 | 1주 후 | 밝고 경쾌하게 |
-| 2번째 | 2주 후 | 따뜻하게 |
-| 3번째 | 4주 후 | 그리움 표현 |
-| 4번째 | 8주 후 | 마무리 인사 |
-
-팬이 새 메일을 보내면 pending 팔로업은 자동 취소됩니다.
-
-## 라이선스
-
-Private
+> "춘심이는 첫 번째 인스턴스입니다. 다음은 당신이 좋아하는 아이돌입니다."

@@ -18,6 +18,8 @@ import {
   scheduleDelayedSend,
   isDryRunMode,
 } from './index';
+import { mintReplyNFT } from '@/lib/blockchain/nft';
+import { processWithGame, isGameEnabled } from '@/lib/agents/orchestrator';
 import { eq } from 'drizzle-orm';
 
 /**
@@ -206,33 +208,84 @@ async function processFanLetter(
     return;
   }
 
-  // 3-2. 답장 생성
+  // 3-2. 답장 생성 (GAME Orchestrator 우선, 폴백 시 기존 파이프라인)
   if (replyDelayMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, replyDelayMs));
   }
 
-  const replyResult = await generateReplyFromEmail(email);
+  let replySubject = '';
+  let replyBody = '';
 
-  if (!replyResult.success || !replyResult.reply) {
-    result.errorCount++;
-    log(`  Reply generation failed: ${replyResult.error}`);
-    return;
+  // GAME Orchestrator 사용 시도
+  const gameResult = isGameEnabled() ? await processWithGame(email) : null;
+
+  if (gameResult?.replyBody) {
+    replySubject = gameResult.replySubject ?? `Re: ${email.subject}`;
+    replyBody = gameResult.replyBody;
+    result.replyGeneratedCount++;
+    log(`  [GAME] Reply generated: ${replySubject.slice(0, 30)}...`);
+
+    // GAME이 claimUrl 반환 시 이메일에 삽입
+    if (gameResult.claimUrl) {
+      replyBody += buildNftSection(replyBody, gameResult.claimUrl);
+    }
+  } else {
+    // 기존 파이프라인 폴백
+    const replyResult = await generateReplyFromEmail(email);
+
+    if (!replyResult.success || !replyResult.reply) {
+      result.errorCount++;
+      log(`  Reply generation failed: ${replyResult.error}`);
+      return;
+    }
+
+    replySubject = replyResult.reply.subject;
+    replyBody = replyResult.reply.body;
+    result.replyGeneratedCount++;
+    log(`  Reply generated: ${replySubject.slice(0, 30)}...`);
+
+    // 3-3. NFT 민팅 (NFT_CONTRACT_ADDRESS 설정 시)
+    if (process.env.NFT_CONTRACT_ADDRESS) {
+      try {
+        const mintResult = await mintReplyNFT({
+          replyContent: replyBody,
+          receivedAt: new Date().toISOString(),
+        });
+        log(`  NFT minted: tier=${mintResult.tier}, claimUrl=${mintResult.claimUrl}`);
+        replyBody += buildNftSection(replyBody, mintResult.claimUrl);
+      } catch (nftError) {
+        console.error('[ProcessEmails] NFT mint failed (continuing without NFT):', nftError);
+      }
+    }
   }
 
-  result.replyGeneratedCount++;
-  log(`  Reply generated: ${replyResult.reply.subject.slice(0, 30)}...`);
-
-  // 3-3. 지연 발송 예약
+  // 3-4. 지연 발송 예약
   const dryRun = isDryRunMode();
   scheduleDelayedSend({
     letterId,
     to: email.fromEmail,
-    subject: replyResult.reply.subject,
-    body: replyResult.reply.body,
+    subject: replySubject,
+    body: replyBody,
   });
 
   result.scheduledCount++;
   log(`  Scheduled${dryRun ? ' (dry-run)' : ''}: to=${email.fromEmail}`);
+}
+
+/**
+ * 이메일 본문에 삽입할 NFT 클레임 섹션 (언어 자동 감지)
+ */
+function buildNftSection(body: string, claimUrl: string): string {
+  const isJapanese = /[\u3040-\u309F\u30A0-\u30FF]/.test(body);
+  const isKorean = /[\uAC00-\uD7A3]/.test(body);
+
+  if (isJapanese) {
+    return `\n\n---\nこの返信はBaseブロックチェーンに永久記録されました。\n確認はこちら: ${claimUrl}`;
+  }
+  if (isKorean) {
+    return `\n\n---\n이 답장은 Base 블록체인에 영구 기록되었습니다.\n확인하기: ${claimUrl}`;
+  }
+  return `\n\n---\nThis reply has been permanently recorded on Base blockchain.\nView it here: ${claimUrl}`;
 }
 
 /**

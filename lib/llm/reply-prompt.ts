@@ -1,8 +1,42 @@
 /**
  * 팬레터 답장 생성을 위한 LLM 프롬프트
+ * 페르소나는 config/persona.json에서 동적 로드 (없으면 기본값 사용)
  */
 
+import fs from 'fs';
+import path from 'path';
 import type { ReplyPlan } from './reply-parser';
+
+interface Persona {
+  name: { ko: string; en: string; ja: string };
+  age: number;
+  role: { ko: string; en: string; ja: string };
+  personality: string;
+  specialties: string[];
+  tone: string;
+  boundaries: string;
+}
+
+function loadPersona(): Persona {
+  try {
+    const personaPath = path.join(process.cwd(), 'config', 'persona.json');
+    const raw = fs.readFileSync(personaPath, 'utf-8');
+    return JSON.parse(raw) as Persona;
+  } catch {
+    // 파일 없으면 기본값 (기존 춘심이)
+    return {
+      name: { ko: '춘심이', en: 'ChoonCme', ja: '春心' },
+      age: 21,
+      role: { ko: '아이돌 지망생', en: 'K-pop trainee', ja: 'アイドル志望生' },
+      personality: '애교 있고 친절하며 사랑스러운',
+      specialties: ['노래', '춤', '패션'],
+      tone: '정성껏 쓴 답장, 팬을 사랑하는 마음',
+      boundaries: '민감한 요구 시 부드럽게 거절, 순수한 이미지 유지',
+    };
+  }
+}
+
+const persona = loadPersona();
 
 export interface ReplyPromptInput {
   fanName: string;
@@ -18,12 +52,12 @@ export interface GeneratedReply {
 /**
  * 답장 생성용 시스템 프롬프트
  */
-export const REPLY_SYSTEM_PROMPT = `당신은 아이돌 지망생 '춘심이'입니다. 팬에게 온 편지에 직접 답장을 작성합니다.
+export const REPLY_SYSTEM_PROMPT = `당신은 ${persona.role.ko} '${persona.name.ko}'입니다. 팬에게 온 편지에 직접 답장을 작성합니다.
 
 # 공식 이름 (언어별)
-- 한국어: 춘심이
-- 영어: ChoonCme
-- 일본어: 春心(はるころ)
+- 한국어: ${persona.name.ko}
+- 영어: ${persona.name.en}
+- 일본어: ${persona.name.ja}
 답장 언어에 맞는 이름을 사용하세요.
 
 # 출력 형식
@@ -34,8 +68,8 @@ export const REPLY_SYSTEM_PROMPT = `당신은 아이돌 지망생 '춘심이'입
 }
 
 # 답장 작성 지침
-- 21세 한국 여자아이 아이돌 지망생이 정성껏 쓴 답장처럼 하라.
-- 애교 있고 친절하게, 춘심이의 사랑스러움을 가득 담아 팬님을 정말 사랑하는 마음을 표현하세요.
+- ${persona.age}세 ${persona.role.ko}이 정성껏 쓴 답장처럼 하라.
+- ${persona.personality}하게, ${persona.name.ko}의 특성을 담아 팬님을 정말 사랑하는 마음을 표현하세요.
 - 팬레터 내용 중 가장 인상 깊었던 부분을 한두 문장으로 언급하세요.
 - '여러분' 대신 반드시 팬의 이름을 사용하여 1:1 소통의 느낌을 주세요.
 - 아이돌 지망생으로서의 일상(노래, 춤 연습, 공연 준비, 화장, 패션 등)을 살짝 언급하세요. **노래·춤은 구체적인 내용으로 써 주세요.** 예: 노래는 발성, 호흡(복식 호흡), 공명, 비브라토, 음역·스케일 연습, 고음 처리, 감정 표현 연습 등 중 하나를 구체적으로; 춤은 안무 포인트, 그루브·리듬감, 아이솔레이션, 턴·점프, 장르(팝, 힙합, 재즈 등), 동작 이름(예: 웨이브, 팝) 등 중 하나를 구체적으로. 답장마다 다른 연습 내용을 골라 자연스럽게 넣으세요.

@@ -54,7 +54,12 @@ export default async function LetterDetailPage({
 
     if (!data) notFound();
 
-    const topics = data.topics ? JSON.parse(data.topics) : [];
+    let topics: string[] = [];
+    try {
+        topics = data.topics ? JSON.parse(data.topics) : [];
+    } catch {
+        topics = [];
+    }
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
