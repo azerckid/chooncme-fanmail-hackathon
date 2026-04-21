@@ -1,7 +1,7 @@
 # 해커톤 구현 로드맵 — Base Agent Hackathon #1
 
 > Created: 2026-04-21
-> Last Updated: 2026-04-21 (구현 진행 상황 반영)
+> Last Updated: 2026-04-21 (Phase 7 GAME + Phase 8 ACP 추가)
 > 해커톤 일시: 2026-04-25 (토) 11:00~17:00
 > 사전 구현 방침: 해커톤 당일 전 구현 완료 목표. 당일 소요 시간 제약 없음.
 
@@ -18,6 +18,8 @@
 | Phase 4 — 최종 제출 | 🔲 대기 | API Key 수령 후 진행 |
 | Phase 5 — 대시보드 버그 | ✅ 완료 | Critical 항목 전체 수정 완료 |
 | Phase 6 — Coinbase 디자인 | ✅ 완료 | globals.css / sidebar / header / charts 적용 |
+| Phase 7 — Virtuals GAME | ✅ 코드 완료 | GAME_API_KEY 수령 후 검증 필요 |
+| Phase 8 — Virtuals ACP | ✅ 코드 완료 | ACP_ENABLED=true + 에이전트 주소 설정 필요 |
 
 ---
 
@@ -459,6 +461,118 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 | Phase 4 | 데모 리허설 완료 + GitHub 제출 | 🔲 대기 | 당일 16:00~17:00 |
 | Phase 5 | 대시보드 Critical 버그 수정 완료 | ✅ 완료 | — |
 | Phase 6 | Coinbase 디자인 적용 + 빌드 통과 | ✅ 완료 | Claim Page 미완 |
+
+---
+
+## Phase 7. Virtuals ACP — 멀티 에이전트 협력 구조 (추가 구현)
+
+> 채점 기준의 Virtuals ACP 항목을 충족하기 위해 기존 단일 파이프라인을 3개 GAME Worker로 분리한다.
+> 기존 파이프라인 로직은 그대로 유지하고, GAME 프레임워크를 상위 레이어로 씌우는 방식을 택한다.
+
+### 아키텍처
+
+```
+GameAgent (Orchestrator)
+  ├── ClassifierWorker  — 팬메일/일반메일 분류
+  │   └── classify_fan_email() → Flock.io LLM 호출
+  ├── ReplyWorker       — 춘심이 답장 생성
+  │   └── generate_reply() → Flock.io LLM 호출
+  └── NFTWorker         — Reply NFT 민팅
+      └── mint_reply_nft() → AgentKit + Base Sepolia
+```
+
+### 7-1. 패키지 설치
+
+- [x] `npm install @virtuals-protocol/game` 설치 완료
+
+### 7-2. GAME Worker 구현
+
+- [x] `lib/agents/workers/classifierWorker.ts` — 팬메일 분류 Worker
+  - `classify_fan_email` GameFunction 정의
+  - 기존 `partitionEmails()` 로직 래핑
+- [x] `lib/agents/workers/replyWorker.ts` — 답장 생성 Worker
+  - `generate_fan_reply` GameFunction 정의
+  - 기존 `generateReplyFromEmail()` 로직 래핑
+- [x] `lib/agents/workers/nftWorker.ts` — NFT 민팅 Worker
+  - `mint_reply_nft` GameFunction 정의
+  - 기존 `mintReplyNFT()` 로직 래핑
+
+### 7-3. Orchestrator Agent 구현
+
+- [x] `lib/agents/orchestrator.ts` — GameAgent 기반 오케스트레이터
+  - 3개 Worker를 조율하는 메인 에이전트
+  - `GAME_API_KEY` 환경변수로 활성화
+  - 미설정 시 기존 파이프라인으로 폴백 (서비스 중단 방지)
+
+### 7-4. 파이프라인 통합
+
+- [x] `lib/scheduler/process-emails.ts` 수정
+  - `GAME_API_KEY` 설정 시 GAME Orchestrator 사용
+  - 미설정 시 기존 직접 파이프라인 유지
+
+### 7-5. 환경변수
+
+```env
+GAME_API_KEY=        # Virtuals GAME Console에서 발급 (https://console.game.virtuals.io)
+```
+
+### 7-6. 동작 검증
+
+- [ ] GAME API Key 수령 후 Orchestrator 단독 실행 테스트
+- [ ] 3개 Worker 순차 실행 확인
+- [ ] 전체 파이프라인 엔드투엔드 테스트
+
+---
+
+## Phase 8. Virtuals ACP — 에이전트 간 서비스 상거래 (추가 구현)
+
+> GAME이 "행동 정의"라면, ACP는 "에이전트 간 거래".
+> Orchestrator(Client)가 각 Worker(Provider)에게 ACP Job을 생성하고 USDC를 지불한다.
+
+### 아키텍처
+
+```
+Orchestrator (ACP Client — 서비스 구매자)
+    │
+    ├── ACP Job 생성 (on-chain, Base Sepolia) + USDC 에스크로
+    │   ├── → ReplyWorker (ACP Provider)  — 0.001 USDC
+    │   └── → NFTWorker   (ACP Provider)  — 0.001 USDC
+    │
+    ↓ GAME Worker로 실제 서비스 실행 후 USDC 릴리즈
+```
+
+### 8-1. 패키지 설치
+
+- [x] `npm install @virtuals-protocol/acp-node` 설치 완료
+
+### 8-2. ACP 브릿지 구현
+
+- [x] `lib/agents/acpBridge.ts` 생성
+  - `AcpContractClientV2.build()` — Base Sepolia x402 설정으로 초기화
+  - `initiateAcpJob()` — Provider에게 Job 생성 + FareAmount(USDC) 지불
+  - `runAcpPipeline()` — ReplyWorker + NFTWorker에 순차 Job 의뢰
+  - `ACP_ENABLED=false` 시 전체 스킵 (기존 파이프라인 유지)
+
+### 8-3. Orchestrator 연동
+
+- [x] `lib/agents/orchestrator.ts` 수정
+  - GAME Worker 실행 전 ACP Job 온체인 생성
+  - `replyJobId`, `nftJobId` 로그 출력
+
+### 8-4. 환경변수
+
+```env
+ACP_ENABLED=true
+AGENT_WALLET_PRIVATE_KEY=        # AgentKit 지갑 Private Key
+ACP_REPLY_PROVIDER_ADDRESS=      # ReplyWorker 에이전트 온체인 주소
+ACP_NFT_PROVIDER_ADDRESS=        # NFTWorker 에이전트 온체인 주소
+```
+
+### 8-5. 동작 검증
+
+- [ ] ACP Job 생성 트랜잭션 Base Sepolia에서 확인
+- [ ] USDC 에스크로 및 릴리즈 흐름 확인
+- [ ] GAME 파이프라인과 연동 동작 확인
 
 ---
 

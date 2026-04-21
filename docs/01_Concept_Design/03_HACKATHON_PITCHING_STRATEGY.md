@@ -104,9 +104,13 @@
 | | 감정 분석 기반 NFT 티어 분기 (Golden / Comfort / Standard) | `lib/blockchain/nft.ts` |
 | | 팬 이메일에 NFT 클레임 링크 자동 삽입 | `lib/scheduler/process-emails.ts` |
 | **Virtuals GAME** | ClassifierWorker — 팬메일 분류 에이전트 | `lib/agents/workers/classifierWorker.ts` |
-| | ReplyWorker — 답장 생성 에이전트 | `lib/agents/workers/replyWorker.ts` |
+| | ReplyWorker — 감정 분석 + 답장 생성 에이전트 | `lib/agents/workers/replyWorker.ts` |
 | | NFTWorker — NFT 민팅 에이전트 | `lib/agents/workers/nftWorker.ts` |
 | | GameAgent Orchestrator — 3개 에이전트 순차 조율 | `lib/agents/orchestrator.ts` |
+| **Virtuals ACP** | Orchestrator → ReplyWorker ACP Job 생성 (USDC 지불) | `lib/agents/acpBridge.ts` |
+| | Orchestrator → NFTWorker ACP Job 생성 (USDC 지불) | `lib/agents/acpBridge.ts` |
+| | AcpContractClientV2 + Base Sepolia x402 설정 | `lib/agents/acpBridge.ts` |
+| | 에이전트 간 서비스 상거래 (Client ↔ Provider 구조) | `lib/agents/acpBridge.ts` |
 
 ---
 
