@@ -1,7 +1,7 @@
 # 해커톤 데모 시나리오 & Q&A 레퍼런스
 
 > Created: 2026-04-21
-> Last Updated: 2026-04-21
+> Last Updated: 2026-04-22
 > 심사 시간: 2026-04-25 17:10~18:40
 
 ---
@@ -94,7 +94,60 @@
 
 ---
 
-## 4. Related Documents
+## 4. 해커톤 당일 실행 환경 구성
+
+### 역할 분리
+
+```
+맥북 로컬 (해커톤 장소)          Vercel (배포)
+├── npm run dev 실행             ├── 대시보드 UI
+├── 이메일 수집 (Gmail cron)     ├── /pitch 피치덱
+├── Flock.io LLM 분류/답장 생성  ├── /claim/[id] NFT 클레임 페이지
+├── AgentKit NFT 민팅            └── /api/* REST API (DB 조회)
+├── x402 결제
+└── 이메일 발송
+```
+
+> Vercel은 서버리스라 cron 지속 실행 불가. 이메일 처리 파이프라인은 반드시 맥북 로컬에서 실행.
+
+### 사전 준비 (해커톤 전날)
+
+- [ ] 기존 맥미니 서버 중단 확인 (이메일 중복 처리 방지)
+- [ ] 맥북에 `.env.local` 복사 및 아래 항목 추가
+  ```env
+  DEMO_MODE=true
+  FLOCK_API_KEY=          # 해커톤 당일 수령
+  CDP_API_KEY_ID=         # 해커톤 당일 수령
+  CDP_API_KEY_SECRET=     # 해커톤 당일 수령
+  NFT_CONTRACT_ADDRESS=   # Base Sepolia 배포 후 추가
+  GAME_API_KEY=           # 해커톤 당일 수령
+  ```
+- [ ] 맥북에서 `npm run dev` 정상 실행 확인
+- [ ] Vercel 배포 URL에서 대시보드, 피치덱 정상 접근 확인
+
+### 해커톤 당일 데모 실행 순서
+
+1. 맥북에서 `npm run dev` 실행
+2. 심사위원에게 `choon.cme@gmail.com`으로 이메일 발송 요청
+3. 터미널에서 즉시 처리 트리거:
+   ```bash
+   curl -X POST http://localhost:3000/api/demo/trigger \
+     -H "Authorization: Bearer $CRON_SECRET"
+   ```
+4. 30초 내 답장 이메일 + NFT 클레임 링크 수신 확인
+5. 심사위원 브라우저에서 Vercel URL의 `/claim/[tokenId]` 페이지 확인
+
+### GitHub / Vercel 구성
+
+| | 원본 (맥미니) | 해커톤 (맥북) |
+|:---|:---|:---|
+| GitHub | `azerckid/chooncme-fan-mail` (private) | `azerckid/chooncme-fanmail-hackathon` (public) |
+| Vercel | 기존 배포 | 새 배포 (`chooncme-hackathon.vercel.app`) |
+| 로컬 서버 | 중단 | 맥북에서 실행 |
+
+---
+
+## 5. Related Documents
 
 - **피칭 전략**: [03_HACKATHON_PITCHING_STRATEGY.md](./03_HACKATHON_PITCHING_STRATEGY.md)
 - **구현 로드맵**: [../04_Logic_Progress/05_HACKATHON_ROADMAP.md](../04_Logic_Progress/05_HACKATHON_ROADMAP.md)
