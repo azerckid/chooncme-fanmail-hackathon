@@ -20,6 +20,7 @@
 | Phase 6 — Coinbase 디자인 | ✅ 완료 | globals.css / sidebar / header / charts 적용 |
 | Phase 7 — Virtuals GAME | ✅ 코드 완료 | GAME_API_KEY 수령 후 검증 필요 |
 | Phase 8 — Virtuals ACP | ✅ 코드 완료 | ACP_ENABLED=true + 에이전트 주소 설정 필요 |
+| Phase 9 — 미구현 항목 수정 | ✅ 완료 | GAME연결/계약파일/ClaimPage/ACP키/Persona |
 
 ---
 
@@ -573,6 +574,53 @@ ACP_NFT_PROVIDER_ADDRESS=        # NFTWorker 에이전트 온체인 주소
 - [ ] ACP Job 생성 트랜잭션 Base Sepolia에서 확인
 - [ ] USDC 에스크로 및 릴리즈 흐름 확인
 - [ ] GAME 파이프라인과 연동 동작 확인
+
+---
+
+## Phase 9. 점검 결과 미구현 항목 수정
+
+> 2026-04-22 전체 코드베이스 점검에서 발견된 5개 미구현 항목.
+
+### 9-1. GAME Orchestrator 파이프라인 연결
+
+> `processWithGame()`이 `process-emails.ts`에 연결되지 않아 GAME/ACP 데모 불가.
+
+- [x] `lib/scheduler/process-emails.ts` 수정
+  - `GAME_API_KEY` 설정 시 `processWithGame()` 호출
+  - 성공 시 GAME 결과 사용, 실패/미설정 시 기존 파이프라인 폴백
+
+### 9-2. contracts/ReplyNFT.sol 파일 생성
+
+> 로드맵에 Solidity 코드가 문서에만 있고 실제 파일 없음. 배포 불가 상태.
+
+- [x] `contracts/ReplyNFT.sol` 파일 생성 (ERC-721URIStorage + Ownable)
+- [x] README에 Remix IDE 배포 방법 안내 포함
+
+### 9-3. NFT Claim Page 구현
+
+> 클레임 링크가 Basescan URL로만 연결. 전용 UI 없음.
+
+- [x] `app/claim/[id]/page.tsx` 신규 생성
+  - tokenId로 NFT 메타데이터 시각화
+  - Coinbase 디자인 시스템 적용
+  - Base Sepolia Explorer 링크 제공
+
+### 9-4. ACP 키 충돌 해결
+
+> AgentKit(`CDP_API_KEY_ID/SECRET`)과 ACP(`AGENT_WALLET_PRIVATE_KEY`)가 다른 키 방식 사용.
+
+- [x] `lib/agents/acpBridge.ts` 수정
+  - `AGENT_WALLET_PRIVATE_KEY` 별도 환경변수로 명확히 분리
+  - AgentKit과 독립적으로 ACP 지갑 운영 가능하도록 처리
+  - 미설정 시 ACP 스킵 (기존 동작 유지)
+
+### 9-5. Persona Config 외부화
+
+> 춘심이 페르소나가 `reply-prompt.ts`에 하드코딩. "Platform" 피칭 증거 없음.
+
+- [x] `config/persona.json` 파일 생성
+- [x] `lib/llm/reply-prompt.ts` 수정 — `persona.json`에서 동적 로드
+- [x] `config/persona-example.json` 생성 (가상 뮤지션 예시)
 
 ---
 
