@@ -2,6 +2,7 @@ import { GameAgent, LLMModel } from '@virtuals-protocol/game';
 import { classifierWorker } from './workers/classifierWorker';
 import { replyWorker } from './workers/replyWorker';
 import { nftWorker } from './workers/nftWorker';
+import { isAcpEnabled, runAcpPipeline } from './acpBridge';
 import type { EmailMessage } from '@/lib/email';
 
 export function isGameEnabled(): boolean {
@@ -45,6 +46,17 @@ export async function processWithGame(
     getOrchestrator();
 
     const log = (msg: string) => console.log(`[GAME] ${msg}`);
+
+    // ACP 활성화 시 Worker에게 Job 생성 (USDC 지불)
+    if (isAcpEnabled()) {
+      const { replyJobId, nftJobId } = await runAcpPipeline({
+        fanEmail: email.fromEmail,
+        fanName: email.fromName,
+        subject: email.subject,
+        content: email.bodyPlain,
+      });
+      log(`ACP jobs initiated: replyJobId=${replyJobId}, nftJobId=${nftJobId}`);
+    }
 
     // 1단계: ClassifierWorker — 팬메일 분류
     const classifyFn = classifierWorker.functions[0];
