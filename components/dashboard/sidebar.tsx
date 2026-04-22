@@ -11,6 +11,8 @@ import {
     Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
     { name: "대시보드", href: "/dashboard", icon: LayoutDashboard },
@@ -23,28 +25,19 @@ export function Sidebar() {
     const pathname = usePathname();
 
     return (
-        <div
-            className="flex flex-col w-64 min-h-screen"
-            style={{ background: "#0a0b0d", borderRight: "1px solid rgba(255,255,255,0.08)" }}
-        >
-            {/* 로고 */}
+        <div className="flex flex-col w-64 min-h-screen bg-[#0a0b0d] border-r border-white/[0.08]">
             <div className="p-6 flex items-center gap-3">
-                <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "#0052ff" }}
-                >
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#0052ff]">
                     <Zap className="w-4 h-4 text-white" />
                 </div>
                 <div>
                     <span className="font-semibold text-white text-sm tracking-tight">춘심이</span>
-                    <p className="text-xs" style={{ color: "#5b616e" }}>Fan Agent on Base</p>
+                    <p className="text-xs text-[#5b616e]">Fan Agent on Base</p>
                 </div>
             </div>
 
-            {/* 구분선 */}
-            <div style={{ height: "1px", background: "rgba(255,255,255,0.08)", margin: "0 24px" }} />
+            <Separator className="mx-6 w-auto bg-white/[0.08]" />
 
-            {/* 네비게이션 */}
             <nav className="flex-1 px-3 py-4 space-y-1">
                 {navItems.map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -55,10 +48,9 @@ export function Sidebar() {
                             className={cn(
                                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                                 isActive
-                                    ? "text-white"
+                                    ? "bg-[#0052ff] text-white"
                                     : "text-[#5b616e] hover:text-white hover:bg-[#282b31]"
                             )}
-                            style={isActive ? { background: "#0052ff" } : {}}
                         >
                             <item.icon className="w-4 h-4 shrink-0" />
                             {item.name}
@@ -67,14 +59,15 @@ export function Sidebar() {
                 })}
             </nav>
 
-            {/* 하단 */}
-            <div className="p-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                <button
-                    className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-[#5b616e] hover:text-white hover:bg-[#282b31]"
+            <Separator className="bg-white/[0.08]" />
+            <div className="p-3">
+                <Button
+                    variant="ghost"
+                    className="flex items-center gap-3 w-full justify-start px-3 py-2.5 text-sm font-medium text-[#5b616e] hover:text-white hover:bg-[#282b31]"
                 >
                     <LogOut className="w-4 h-4 shrink-0" />
                     로그아웃
-                </button>
+                </Button>
             </div>
         </div>
     );

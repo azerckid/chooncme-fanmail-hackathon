@@ -140,7 +140,7 @@ export default async function LetterDetailPage({
                                 <p className="text-xs text-neutral-400 uppercase tracking-wider">감정 분석</p>
                                 <div className="flex items-center justify-between font-medium">
                                     <span>
-                                        {data.sentiment === 'positive' ? '😊 긍정적' : data.sentiment === 'negative' ? '😢 부정적' : '😐 중립적'}
+                                        {data.sentiment === 'positive' ? '긍정적' : data.sentiment === 'negative' ? '부정적' : '중립적'}
                                     </span>
                                     <span className="text-neutral-400">{Math.round((data.sentimentScore || 0) * 100)}%</span>
                                 </div>

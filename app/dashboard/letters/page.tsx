@@ -69,17 +69,17 @@ export default async function LettersPage({
     const resolvedSearchParams = await searchParams;
     const letters = await getLetters(resolvedSearchParams);
 
-    const getSentimentEmoji = (sentiment: string | null) => {
+    const getSentimentLabel = (sentiment: string | null) => {
         switch (sentiment) {
-            case "positive": return "😊";
-            case "neutral": return "😐";
-            case "negative": return "😢";
-            default: return "😶";
+            case "positive": return "긍정";
+            case "neutral": return "중립";
+            case "negative": return "부정";
+            default: return "분석 전";
         }
     };
 
     const getLanguageLabel = (lang: string | null) => {
-        const map: Record<string, string> = { ko: "🇰🇷 한국어", en: "🇺🇸 영어", ja: "🇯🇵 일본어", zh: "🇨🇳 중국어" };
+        const map: Record<string, string> = { ko: "한국어", en: "영어", ja: "일본어", zh: "중국어" };
         return lang ? map[lang] || lang.toUpperCase() : "알 수 없음";
     };
 
@@ -133,9 +133,8 @@ export default async function LettersPage({
                                                     <Badge variant="secondary" className="bg-white border-neutral-200">
                                                         {getLanguageLabel(letter.language)}
                                                     </Badge>
-                                                    <Badge variant="secondary" className="bg-white border-neutral-200 gap-1">
-                                                        <span>{getSentimentEmoji(letter.sentiment)}</span>
-                                                        {letter.sentiment === 'positive' ? '긍정' : letter.sentiment === 'negative' ? '부정' : '중립'}
+                                                    <Badge variant="secondary" className="bg-white border-neutral-200">
+                                                        {getSentimentLabel(letter.sentiment)}
                                                     </Badge>
                                                     {letter.hasReply && (
                                                         <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">

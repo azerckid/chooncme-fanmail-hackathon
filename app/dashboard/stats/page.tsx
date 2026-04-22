@@ -10,6 +10,8 @@ import {
     CardDescription
 } from "@/components/ui/card";
 import { TrendChart, SentimentChart, LanguageChart } from "@/components/dashboard/charts";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     LayoutDashboard,
     TrendingUp,
@@ -18,7 +20,6 @@ import {
     BarChart3,
     Calendar,
     ArrowUpRight,
-    ArrowDownRight
 } from "lucide-react";
 
 async function getDetailedStats() {
@@ -57,14 +58,14 @@ async function getDetailedStats() {
             .orderBy(sql`count(*) desc`)
             .limit(10);
 
-        // 최근 30일 수신 추이
-        const thirtyDaysAgo = DateTime.now().minus({ days: 30 }).toISODate();
+        // 최근 90일 수신 추이 (7/30/90일 모두 커버)
+        const ninetyDaysAgo = DateTime.now().minus({ days: 90 }).toISODate();
         const trendData = await db.select({
             date: sql<string>`date(received_at)`,
             count: sql<number>`count(*)`
         })
             .from(fanLetters)
-            .where(gte(fanLetters.receivedAt, thirtyDaysAgo || ""))
+            .where(gte(fanLetters.receivedAt, ninetyDaysAgo || ""))
             .groupBy(sql`date(received_at)`)
             .orderBy(sql`date(received_at)`);
 
@@ -122,6 +123,13 @@ export default async function StatsPage() {
         last30DaysTrend.push({ date, count: found?.count || 0 });
     }
 
+    const last90DaysTrend = [];
+    for (let i = 89; i >= 0; i--) {
+        const date = DateTime.now().minus({ days: i }).toISODate();
+        const found = stats.trend.find((d: any) => d.date === date);
+        last90DaysTrend.push({ date, count: found?.count || 0 });
+    }
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center justify-between">
@@ -129,10 +137,12 @@ export default async function StatsPage() {
                     <h2 className="text-3xl font-bold tracking-tight">분석 리포트</h2>
                     <p className="text-neutral-500 mt-2">팬레터 데이터를 통해 분석한 글로벌 팬덤 인사이트입니다.</p>
                 </div>
-                <div className="flex items-center gap-2 bg-neutral-100 p-1 rounded-xl">
-                    <div className="px-4 py-2 bg-white rounded-lg shadow-sm text-sm font-medium">실시간</div>
-                    <div className="px-4 py-2 text-sm text-neutral-400 font-medium">업데이트 완료</div>
-                </div>
+                <Tabs defaultValue="realtime">
+                    <TabsList>
+                        <TabsTrigger value="realtime">실시간</TabsTrigger>
+                        <TabsTrigger value="updated">업데이트 완료</TabsTrigger>
+                    </TabsList>
+                </Tabs>
             </div>
 
             {/* Top Summaries */}
@@ -203,7 +213,7 @@ export default async function StatsPage() {
                         <CardDescription>편지 수신량이 가장 많았던 날을 확인하세요.</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[350px] p-6">
-                        <TrendChart data7Days={last7DaysTrend} data30Days={last30DaysTrend} />
+                        <TrendChart data7Days={last7DaysTrend} data30Days={last30DaysTrend} data90Days={last90DaysTrend} />
                     </CardContent>
                 </Card>
 
@@ -255,12 +265,10 @@ export default async function StatsPage() {
                                             <span className="font-medium text-sm">{item.name}</span>
                                         </div>
                                         <div className="flex items-center gap-4">
-                                            <div className="w-24 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-indigo-500"
-                                                    style={{ width: `${(item.value / stats.summary.total) * 100}%` }}
-                                                />
-                                            </div>
+                                            <Progress
+                                                value={(item.value / stats.summary.total) * 100}
+                                                className="w-24 h-1.5"
+                                            />
                                             <span className="text-xs font-bold text-neutral-900">{item.value}</span>
                                         </div>
                                     </div>

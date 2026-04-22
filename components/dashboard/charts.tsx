@@ -29,11 +29,21 @@ interface DistributionData {
 interface TrendChartProps {
     data7Days: TrendData[];
     data30Days: TrendData[];
+    data90Days: TrendData[];
 }
 
-export function TrendChart({ data7Days, data30Days }: TrendChartProps) {
-    const [period, setPeriod] = useState<"7" | "30">("7");
-    const data = period === "7" ? data7Days : data30Days;
+const PERIODS = [
+    { label: "7일", value: "7" },
+    { label: "30일", value: "30" },
+    { label: "90일", value: "90" },
+] as const;
+
+type Period = typeof PERIODS[number]["value"];
+
+export function TrendChart({ data7Days, data30Days, data90Days }: TrendChartProps) {
+    const [period, setPeriod] = useState<Period>("90");
+    const dataMap: Record<Period, TrendData[]> = { "7": data7Days, "30": data30Days, "90": data90Days };
+    const data = dataMap[period];
 
     const formattedData = data.map(item => ({
         ...item,
@@ -43,26 +53,19 @@ export function TrendChart({ data7Days, data30Days }: TrendChartProps) {
     return (
         <div>
             <div className="flex gap-2 mb-4">
-                <button
-                    onClick={() => setPeriod("7")}
-                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                        period === "7"
-                            ? "bg-blue-500 text-white"
-                            : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                    }`}
-                >
-                    7일
-                </button>
-                <button
-                    onClick={() => setPeriod("30")}
-                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                        period === "30"
-                            ? "bg-blue-500 text-white"
-                            : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                    }`}
-                >
-                    30일
-                </button>
+                {PERIODS.map(({ label, value }) => (
+                    <button
+                        key={value}
+                        onClick={() => setPeriod(value)}
+                        className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                            period === value
+                                ? "bg-blue-500 text-white"
+                                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                        }`}
+                    >
+                        {label}
+                    </button>
+                ))}
             </div>
             <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={formattedData}>
@@ -101,30 +104,30 @@ export function TrendChart({ data7Days, data30Days }: TrendChartProps) {
 }
 
 const SENTIMENT_COLORS: { [key: string]: string } = {
-    love: "#0052ff",      // Coinbase Blue
-    support: "#578bfa",   // Coinbase Hover Blue
-    joy: "#0667d0",       // Coinbase Link Blue
-    gratitude: "#282b31", // Coinbase Dark Card
-    longing: "#5b616e",   // Coinbase Muted
-    sadness: "#8892a0",   // Light muted
-    concern: "#00cc99",   // 그린티
-    neutral: "#eab308",
-    positive: "#22c55e",
-    negative: "#ef4444",
-    unknown: "#a3a3a3",
+    love:      "#ef4444", // 빨
+    support:   "#f97316", // 주
+    joy:       "#eab308", // 노
+    gratitude: "#22c55e", // 초
+    longing:   "#14b8a6", // 청록
+    sadness:   "#3b82f6", // 파
+    concern:   "#6366f1", // 남
+    neutral:   "#a855f7", // 보
+    positive:  "#84cc16", // 연두
+    negative:  "#dc2626", // 진빨
+    unknown:   "#a3a3a3",
 };
 
 const SENTIMENT_LABELS: { [key: string]: string } = {
-    love: "사랑 ❤️",
-    support: "응원 🙌",
-    joy: "행복 ✨",
-    gratitude: "감사 🙏",
-    longing: "그리움 💌",
-    sadness: "슬픔 💧",
-    concern: "걱정 🍵",
-    neutral: "중립 😐",
-    positive: "긍정 😊",
-    negative: "부정 😢",
+    love: "사랑",
+    support: "응원",
+    joy: "행복",
+    gratitude: "감사",
+    longing: "그리움",
+    sadness: "슬픔",
+    concern: "걱정",
+    neutral: "중립",
+    positive: "긍정",
+    negative: "부정",
     unknown: "분석 전",
 };
 
@@ -178,24 +181,24 @@ export function SentimentChart({ data }: { data: DistributionData }) {
 }
 
 const LANGUAGE_LABELS: { [key: string]: string } = {
-    ko: "🇰🇷 한국어",
-    en: "🇬🇧 영어",
-    ja: "🇯🇵 일본어",
-    zh: "🇨🇳 중국어",
-    es: "🇪🇸 스페인어",
-    pt: "🇧🇷 포르투갈어",
-    ar: "🇸🇦 아랍어",
-    fr: "🇫🇷 프랑스어",
-    de: "🇩🇪 독일어",
-    tr: "🇹🇷 터키어",
-    th: "🇹🇭 태국어",
-    vi: "🇻🇳 베트남어",
-    ru: "🇷🇺 러시아어",
-    id: "🇮🇩 인도네시아어",
-    it: "🇮🇹 이탈리아어",
-    hr: "🇭🇷 크로아티아어",
-    hu: "🇭🇺 헝가리어",
-    sk: "🇸🇰 슬로바키아어",
+    ko: "한국어",
+    en: "영어",
+    ja: "일본어",
+    zh: "중국어",
+    es: "스페인어",
+    pt: "포르투갈어",
+    ar: "아랍어",
+    fr: "프랑스어",
+    de: "독일어",
+    tr: "터키어",
+    th: "태국어",
+    vi: "베트남어",
+    ru: "러시아어",
+    id: "인도네시아어",
+    it: "이탈리아어",
+    hr: "크로아티아어",
+    hu: "헝가리어",
+    sk: "슬로바키아어",
     unknown: "기타",
 };
 

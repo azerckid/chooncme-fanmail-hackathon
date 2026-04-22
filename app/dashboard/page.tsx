@@ -80,6 +80,17 @@ async function getStats() {
             .groupBy(sql`date(received_at)`)
             .orderBy(sql`date(received_at)`);
 
+        // 최근 90일 수신 추이
+        const ninetyDaysAgo = DateTime.now().minus({ days: 90 }).toISODate();
+        const recentTrendData90 = await db.select({
+            date: sql<string>`date(received_at)`,
+            count: sql<number>`count(*)`
+        })
+            .from(fanLetters)
+            .where(gte(fanLetters.receivedAt, ninetyDaysAgo || ""))
+            .groupBy(sql`date(received_at)`)
+            .orderBy(sql`date(received_at)`);
+
         // 7일 날짜 배열 생성
         const recentTrend7 = [];
         for (let i = 6; i >= 0; i--) {
@@ -102,6 +113,17 @@ async function getStats() {
             });
         }
 
+        // 90일 날짜 배열 생성
+        const recentTrend90 = [];
+        for (let i = 89; i >= 0; i--) {
+            const date = DateTime.now().minus({ days: i }).toISODate();
+            const found = recentTrendData90.find(d => d.date === date);
+            recentTrend90.push({
+                date,
+                count: found?.count || 0
+            });
+        }
+
         const today = DateTime.now().toISODate();
         const todayCount = recentTrendData7.find(d => d.date === today)?.count || 0;
 
@@ -115,6 +137,7 @@ async function getStats() {
             bySentiment: Object.fromEntries(bySentiment.map(x => [x.sentiment || "unknown", x.count])),
             recentTrend7,
             recentTrend30,
+            recentTrend90,
         };
     } catch (error) {
         console.error("Stats fetch error:", error);
@@ -128,6 +151,7 @@ async function getStats() {
             bySentiment: {},
             recentTrend7: [],
             recentTrend30: [],
+            recentTrend90: [],
         };
     }
 }
@@ -227,7 +251,7 @@ export default async function DashboardPage() {
                         <CardDescription>일별 팬레터 수신 현황</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <TrendChart data7Days={stats.recentTrend7} data30Days={stats.recentTrend30} />
+                        <TrendChart data7Days={stats.recentTrend7} data30Days={stats.recentTrend30} data90Days={stats.recentTrend90} />
                     </CardContent>
                 </Card>
 
