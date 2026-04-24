@@ -1,7 +1,7 @@
 # 해커톤 기술 명세 — Base Agent Hackathon #1
 
 > Created: 2026-04-21
-> Last Updated: 2026-04-21 (Basenames & Claim Page 설계 추가)
+> Last Updated: 2026-04-24 (Nansen VIP 팬 등급 시스템 추가)
 
 ---
 
@@ -189,7 +189,111 @@ app/
 
 ---
 
-## 8. Related Documents
+## 8. Nansen VIP 팬 온체인 등급 시스템 (Phase 10)
+
+> Nansen API 검증 결과에 따라 방향 A/B/C 중 선택.
+> 검증 절차: [../05_QA_Validation/03_Nansen_API_검증_및_구현결정.md](../05_QA_Validation/03_Nansen_API_검증_및_구현결정.md)
+
+### 8-1. 개요
+
+팬이 팬메일 본문에 지갑 주소를 포함하면 에이전트가 Nansen API로 해당 지갑이
+AgentKit 에이전트 지갑(`AGENT_WALLET_ADDRESS`)으로 과거에 ETH/USDC를 송금한 이력이
+있는지 조회한다. 후원 이력이 확인되면 Golden Reply NFT + 특별 답장을 발행한다.
+
+### 8-2. 신규 파일: `lib/blockchain/nansen.ts`
+
+```typescript
+export type FanTier = 'vip' | 'regular';
+
+export interface NansenProfile {
+  tier: FanTier;
+  hasSentToAgent: boolean;       // 에이전트 지갑 송금 이력
+  totalSentUsd: number;          // 총 송금액 추정치
+}
+
+/**
+ * 팬 지갑의 에이전트 지갑 후원 이력 조회
+ * 방향 A: Nansen API 직접 호출
+ * 방향 B: 포트폴리오 데이터 기반 임계값 분류
+ * 방향 C: Base RPC 직접 조회 (Nansen 폴백)
+ */
+export async function getFanProfile(
+  fanWalletAddress: string
+): Promise<NansenProfile>
+```
+
+### 8-3. 수정 파일: `lib/email/classify.ts`
+
+팬메일 본문에서 지갑 주소 파싱 추가.
+
+```typescript
+// 0x로 시작하는 42자리 hex 주소 추출
+const WALLET_REGEX = /0x[a-fA-F0-9]{40}/g;
+
+export function extractWalletAddress(body: string): string | null {
+  const matches = body.match(WALLET_REGEX);
+  return matches?.[0] ?? null;
+}
+```
+
+### 8-4. 수정 파일: `lib/llm/reply-prompt.ts`
+
+팬 티어에 따라 시스템 프롬프트 분기.
+
+```typescript
+export function buildReplyPrompt(
+  letter: FanLetter,
+  tier: FanTier = 'regular'
+): { systemPrompt: string; userPrompt: string } {
+  const vipPrefix = tier === 'vip'
+    ? '이 팬은 직접 후원을 보내준 소중한 팬입니다. 평소보다 훨씬 길고 감동적인 답장을 써주세요. 후원에 대한 진심 어린 감사를 꼭 표현하세요.'
+    : '';
+  // ...기존 프롬프트에 vipPrefix 주입
+}
+```
+
+### 8-5. 수정 파일: `lib/blockchain/nft.ts`
+
+`getTierFromEmotion()` 외 온체인 후원 이력 기반 티어 트리거 추가.
+
+```typescript
+// 기존: 감정 기반
+// 추가: VIP 팬이면 무조건 golden 오버라이드
+export function resolveFinalTier(
+  emotionTier: NftTier,
+  fanTier: FanTier
+): NftTier {
+  if (fanTier === 'vip') return 'golden';
+  return emotionTier;
+}
+```
+
+### 8-6. 파이프라인 연동 흐름
+
+```
+Gmail 수신 → 이메일 본문에서 지갑 주소 추출
+  ├─ 지갑 주소 있음 → Nansen API 조회 → FanTier 결정
+  │     ├─ vip   → VIP 프롬프트 + Golden NFT 민팅
+  │     └─ regular → 기본 프롬프트 + 감정 기반 NFT 티어
+  └─ 지갑 주소 없음 → 기본 프롬프트 + 감정 기반 NFT 티어
+```
+
+### 8-7. 환경변수 추가
+
+| 변수명 | 필수 | 설명 |
+|:---|:---:|:---|
+| `NANSEN_API_KEY` | O (Phase 10) | Nansen API Key (행사 당일 크레딧 수령) |
+| `NANSEN_BASE_URL` | — | 기본값: `https://api.nansen.ai/v1` |
+
+### 8-8. 데모 준비 (해킹 시작 전)
+
+- 테스트 팬 지갑에서 AgentKit 지갑(`0x363a...`)으로 Base Sepolia ETH 소액 송금
+- 해당 지갑 주소를 포함한 팬메일 초안 준비
+- 심사 중 발송 → Golden NFT 수령 라이브 시연
+
+---
+
+## 9. Related Documents
 
 - **구현 로드맵**: [05_HACKATHON_ROADMAP.md](../04_Logic_Progress/05_HACKATHON_ROADMAP.md)
 - **피칭 전략**: [03_HACKATHON_PITCHING_STRATEGY.md](../01_Concept_Design/03_HACKATHON_PITCHING_STRATEGY.md)

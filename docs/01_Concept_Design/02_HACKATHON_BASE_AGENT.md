@@ -1,7 +1,7 @@
 # Base Agent Hackathon #1 — 출전 전략 문서
 
 > Created: 2026-04-21 00:42
-> Last Updated: 2026-04-21 00:42
+> Last Updated: 2026-04-24
 
 ---
 
@@ -171,14 +171,21 @@ x402 (에이전트 자율 결제)
 
 초안 검토 결과 아래 방향으로 확정하였다.
 
-**Reply NFT Social Agent**
+**Reply NFT Social Agent + VIP 팬 온체인 등급 시스템**
 
 팬이 팬레터 이메일을 보내면 Flock.io LLM이 춘심이 페르소나로 답장을 생성하고, AgentKit으로 답장을 ERC-721 NFT로 민팅하여 Base Sepolia에 영구 기록한다. 에이전트는 LLM 추론 비용을 x402로 자율 결제한다(Phase 3, 조건부).
 
+여기에 더해, 팬이 메일에 지갑 주소를 포함할 경우 Nansen API로 해당 지갑의 AgentKit 에이전트 지갑(`0x363a...`)으로의 과거 송금 이력을 조회한다. 후원 이력이 확인되면 '최우수 후원자' 전용 프롬프트로 훨씬 길고 감동적인 답장을 생성하고, 한정판 **Golden Reply NFT**를 발행한다.
+
 **확정 근거**:
-- 이메일 채널에서 팬 결제 유도는 구조적으로 불가능 (HTTP 402 삽입 지점 없음)
 - Reply NFT는 이메일 파이프라인을 거의 건드리지 않고 온체인 가치를 추가할 수 있는 가장 현실적인 방식
 - 심사위원이 라이브로 NFT를 Base Sepolia Explorer에서 직접 확인 가능
+- 온체인 후원 이력(결제) → 오프체인 서비스 품질 향상이 Agentic Commerce 심사 기준에 정확히 부합
+- `getTierFromEmotion()`에 이미 `golden` 티어가 구현되어 있어 트리거 조건만 추가하면 됨
+- Nansen API 실패 시 Base 퍼블릭 RPC로 폴백 가능 (구현 리스크 낮음)
+
+**데모 시나리오 핵심**:
+> "이 팬은 과거에 에이전트 지갑으로 ETH를 보낸 이력이 있습니다. 에이전트가 이를 인식하고 Golden NFT와 특별 답장을 자동 발송합니다."
 
 ---
 

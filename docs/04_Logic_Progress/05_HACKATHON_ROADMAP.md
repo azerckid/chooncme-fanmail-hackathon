@@ -1,7 +1,7 @@
 # 해커톤 구현 로드맵 — Base Agent Hackathon #1
 
 > Created: 2026-04-21
-> Last Updated: 2026-04-21 (Phase 7 GAME + Phase 8 ACP 추가)
+> Last Updated: 2026-04-24
 > 해커톤 일시: 2026-04-25 (토) 11:00~17:00
 > 사전 구현 방침: 해커톤 당일 전 구현 완료 목표. 당일 소요 시간 제약 없음.
 
@@ -21,6 +21,7 @@
 | Phase 7 — Virtuals GAME | ✅ 코드 완료 | GAME_API_KEY 수령 후 검증 필요 |
 | Phase 8 — Virtuals ACP | ✅ 코드 완료 | ACP_ENABLED=true + 에이전트 주소 설정 필요 |
 | Phase 9 — 미구현 항목 수정 | ✅ 완료 | GAME연결/계약파일/ClaimPage/ACP키/Persona |
+| Phase 10 — Nansen 팬 지갑 프로파일링 | 🔲 대기 | 행사 당일 API 검증 후 방향 A/B/C 결정 |
 
 ---
 
@@ -50,6 +51,7 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 ### 0-1. 계정 및 API Key 발급
 
 - [ ] Flock.io 계정 생성 (https://flock.io)
+- [ ] Nansen 계정 생성 (https://nansen.ai) — 크레딧은 행사 당일 오전 azerckid@gmail.com으로 지급
 - [ ] Flock.io API Key 발급 및 `.env.local`에 추가
   - `FLOCK_API_KEY=`
   - `FLOCK_BASE_URL=` (Flock.io 문서에서 OpenAI 호환 엔드포인트 확인)
@@ -621,6 +623,64 @@ ACP_NFT_PROVIDER_ADDRESS=        # NFTWorker 에이전트 온체인 주소
 - [x] `config/persona.json` 파일 생성
 - [x] `lib/llm/reply-prompt.ts` 수정 — `persona.json`에서 동적 로드
 - [x] `config/persona-example.json` 생성 (가상 뮤지션 예시)
+
+---
+
+## Phase 10. Nansen VIP 팬 온체인 등급 시스템 (조건부 — 검증 후 구현)
+
+> 전제 조건: Phase 0-1 Nansen 계정 생성 + 행사 당일 오전 크레딧 수령
+> 의존 관계: Phase 1 (Flock.io LLM) + Phase 2 (AgentKit NFT) 완료 후 진행
+> API 검증 절차: [../05_QA_Validation/03_Nansen_API_검증_및_구현결정.md](../05_QA_Validation/03_Nansen_API_검증_및_구현결정.md)
+> 기술 명세: [../03_Technical_Specs/06_HACKATHON_TECH_SPEC.md#8-nansen-vip-팬-온체인-등급-시스템-phase-10](../03_Technical_Specs/06_HACKATHON_TECH_SPEC.md)
+
+### 개념
+
+팬이 과거에 에이전트 지갑(`AGENT_WALLET_ADDRESS`)으로 ETH/USDC를 송금한 이력이 있으면
+'VIP 팬'으로 식별하여 Golden Reply NFT + 특별 답장을 자동 발행한다.
+온체인 후원 이력(결제)이 오프체인 서비스 품질을 결정하는 Agentic Commerce 모델.
+
+### 10-1. Nansen API 검증 (해킹 시작 전)
+
+> 결과를 [검증 문서](../05_QA_Validation/03_Nansen_API_검증_및_구현결정.md) 기록란에 작성 후 방향 결정.
+
+- [ ] Check 1 — 에이전트 지갑으로의 송금 이력 조회 API 존재 여부 확인
+- [ ] Check 2 — 포트폴리오/트랜잭션 데이터 응답 속도 확인 (3초 이내)
+- [ ] Check 3 — Base Sepolia 지원 여부 확인
+- [ ] 방향 A/B/C 결정 후 `.env.local`에 `NANSEN_API_KEY` 추가
+
+### 10-2. 데모 사전 준비 (해킹 시작 전 필수)
+
+- [ ] 테스트 팬 지갑에서 AgentKit 지갑(`0x363ad1c57C5cf94Ff4C0728Ca187bE4afB1Ee8B5`)으로
+      Base Sepolia ETH 소액 송금 (심사 중 "이 팬은 후원 이력 있음" 라이브 시연용)
+- [ ] 해당 지갑 주소 포함 팬메일 초안 준비
+
+### 10-3. 구현 — `lib/blockchain/nansen.ts` 신규 생성
+
+- [ ] `getFanProfile(fanWalletAddress)` 함수 구현
+  - 방향 A: Nansen 트랜잭션 API로 에이전트 지갑 수신 이력 직접 조회
+  - 방향 B: Nansen 포트폴리오 데이터 + 임계값 기반 자체 분류
+  - 방향 C: Base 퍼블릭 RPC로 에이전트 지갑 수신 트랜잭션 직접 조회 (Nansen 폴백)
+- [ ] 반환값: `{ tier: 'vip' | 'regular', hasSentToAgent: boolean }`
+
+### 10-4. 구현 — `lib/email/classify.ts` 수정
+
+- [ ] 팬메일 본문에서 지갑 주소 파싱 (`0x[a-fA-F0-9]{40}` 정규식)
+- [ ] 지갑 주소 없는 경우 `regular` 티어로 자동 폴백
+
+### 10-5. 구현 — `lib/llm/reply-prompt.ts` 수정
+
+- [ ] `tier === 'vip'` 시 특별 프롬프트 주입 (후원 감사 + 더 길고 감동적인 답장)
+
+### 10-6. 구현 — `lib/blockchain/nft.ts` 수정
+
+- [ ] `resolveFinalTier(emotionTier, fanTier)` 함수 추가
+  - `fanTier === 'vip'`이면 감정 분석 결과와 무관하게 `golden` 오버라이드
+
+### 10-7. 동작 검증
+
+- [ ] VIP 지갑 주소 포함 팬메일 → Golden NFT 민팅 + VIP 답장 확인
+- [ ] 일반 지갑 주소 포함 팬메일 → 기존 감정 기반 NFT 티어 정상 동작 확인
+- [ ] 지갑 주소 없는 팬메일 → 기존 파이프라인 정상 폴백 확인
 
 ---
 
