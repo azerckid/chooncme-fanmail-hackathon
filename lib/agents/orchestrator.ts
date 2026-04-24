@@ -1,4 +1,4 @@
-import { GameAgent, LLMModel } from '@virtuals-protocol/game';
+import { GameAgent, GameWorker, GameFunction, LLMModel } from '@virtuals-protocol/game';
 import { classifierWorker } from './workers/classifierWorker';
 import { replyWorker } from './workers/replyWorker';
 import { nftWorker } from './workers/nftWorker';
@@ -9,45 +9,54 @@ export function isGameEnabled(): boolean {
   return !!process.env.GAME_API_KEY;
 }
 
-let orchestrator: GameAgent | null = null;
-
-export function getOrchestrator(): GameAgent {
-  if (orchestrator) return orchestrator;
-
-  const apiKey = process.env.GAME_API_KEY;
-  if (!apiKey) throw new Error('GAME_API_KEY is not set');
-
-  orchestrator = new GameAgent(apiKey, {
-    name: 'Chooncme Fan Agent',
-    goal: 'Process fan letters: classify incoming emails, generate personalized replies as Chooncme persona, and mint Reply NFTs on Base blockchain.',
-    description:
-      'A multi-agent system built on Virtuals GAME framework. ' +
-      'Uses Flock.io Web3 Agent LLM for classification and reply generation, ' +
-      'Coinbase AgentKit for NFT minting on Base Sepolia, ' +
-      'and x402 protocol for autonomous on-chain payment of inference costs.',
-    workers: [classifierWorker, replyWorker, nftWorker],
-    llmModel: LLMModel.DeepSeek_R1,
-  });
-
-  return orchestrator;
+interface SessionResult {
+  classification?: { classification: string; confidence: number };
+  reply?: { subject: string; body: string; emotional_tone: string };
+  nft?: { tokenId: string; claimUrl: string; tier: string };
 }
 
-/**
- * GAME Worker functions를 직접 실행하여 팬레터 1건 처리
- * GAME_API_KEY 미설정 시 null 반환 → 기존 파이프라인으로 폴백
- */
+function makeCapturingWorker(
+  base: GameWorker,
+  onResult: (result: unknown) => void,
+  env: Record<string, string>
+): GameWorker {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fn = base.functions[0] as any;
+  return new GameWorker({
+    id: base.id,
+    name: base.name,
+    description: base.description,
+    functions: [
+      new GameFunction({
+        name: fn.name,
+        description: fn.description,
+        args: fn.args,
+        executable: async (args, logger) => {
+          const res = await fn.execute(args, logger);
+          try { onResult(JSON.parse(res.feedback ?? '{}')); } catch {}
+          return res;
+        },
+      }),
+    ],
+    getEnvironment: async () => env,
+  });
+}
+
 export async function processWithGame(
   email: EmailMessage
 ): Promise<{ claimUrl?: string; replyBody?: string; replySubject?: string } | null> {
   if (!isGameEnabled()) return null;
 
   try {
-    // GameAgent 초기화 (Workers 등록용)
-    getOrchestrator();
+    const results: SessionResult = {};
 
-    const log = (msg: string) => console.log(`[GAME] ${msg}`);
+    const emailEnv = {
+      from: email.fromEmail,
+      name: email.fromName ?? '',
+      subject: email.subject,
+      body: email.bodyPlain.slice(0, 500),
+    };
 
-    // ACP 활성화 시 Worker에게 Job 생성 (USDC 지불)
     if (isAcpEnabled()) {
       const { replyJobId, nftJobId } = await runAcpPipeline({
         fanEmail: email.fromEmail,
@@ -55,72 +64,64 @@ export async function processWithGame(
         subject: email.subject,
         content: email.bodyPlain,
       });
-      log(`ACP jobs initiated: replyJobId=${replyJobId}, nftJobId=${nftJobId}`);
+      console.log(`[GAME] ACP jobs initiated: replyJobId=${replyJobId}, nftJobId=${nftJobId}`);
     }
 
-    // 1단계: ClassifierWorker — 팬메일 분류
-    const classifyFn = classifierWorker.functions[0];
-    const classifyRes = await classifyFn.execute(
-      {
-        from: { value: email.fromEmail },
-        subject: { value: email.subject },
-        body_preview: { value: email.bodyPlain.slice(0, 500) },
-      },
-      log
-    );
+    const workers = [
+      makeCapturingWorker(classifierWorker, (r) => { results.classification = r as SessionResult['classification']; }, emailEnv),
+      makeCapturingWorker(replyWorker,      (r) => { results.reply = r as SessionResult['reply']; },          emailEnv),
+      makeCapturingWorker(nftWorker,        (r) => { results.nft = r as SessionResult['nft']; },             emailEnv),
+    ];
 
-    const classification = JSON.parse(classifyRes.feedback ?? '{}');
-    if (classification.classification !== 'fan') {
-      log(`Not a fan letter: ${email.subject}`);
+    const flockKey = process.env.FLOCK_API_KEY;
+    const flockBase = process.env.FLOCK_BASE_URL ?? 'https://api.flock.io/v1';
+    const flockModel = process.env.FLOCK_MODEL ?? 'deepseek-v3.2';
+
+    const agent = new GameAgent(process.env.GAME_API_KEY!, {
+      name: 'Chooncme Fan Agent',
+      goal: `Process fan letter from ${email.fromName} <${email.fromEmail}>. Subject: "${email.subject}". Classify if fan letter, generate Chooncme persona reply, then mint Reply NFT on Base blockchain.`,
+      description:
+        'Multi-agent pipeline on Virtuals GAME framework: ' +
+        'classify fan emails → generate personalized K-pop idol replies → mint ERC-721 NFT on Base.',
+      workers,
+      getAgentState: async () => emailEnv,
+      ...(flockKey
+        ? { llmModel: flockModel, llmModelBaseUrl: flockBase, llmModelApiKey: flockKey }
+        : { llmModel: LLMModel.DeepSeek_R1 }),
+    });
+
+    await agent.init();
+
+    for (let i = 0; i < 10; i++) {
+      const action = await agent.step({ verbose: true });
+      console.log(`[GAME] step ${i + 1}: ${action}`);
+      if (action === 'wait' || action === 'unknown') break;
+    }
+
+    if (results.classification?.classification !== 'fan') {
+      console.log(`[GAME] Not a fan letter: ${email.subject}`);
       return null;
     }
+    if (!results.reply?.body) return null;
 
-    // 2단계: ReplyWorker — 답장 생성
-    const replyFn = replyWorker.functions[0];
-    const replyRes = await replyFn.execute(
-      {
-        fan_name: { value: email.fromName },
-        letter_subject: { value: email.subject },
-        letter_content: { value: email.bodyPlain },
-      },
-      log
-    );
-
-    let reply: Record<string, string> = {};
-    try {
-      const raw = replyRes.feedback ?? '{}';
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      reply = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
-    } catch {
-      log(`Reply parse failed, feedback: ${replyRes.feedback?.slice(0, 100)}`);
-      return null;
-    }
-    if (!reply.body) return null;
-
-    log(`Emotional tone from reply plan: ${reply.emotional_tone}`);
-
-    // 3단계: NFTWorker — Reply NFT 민팅
-    // emotional_tone은 ReplyWorker의 2단계 계획에서 추출한 값 사용
-    const nftFn = nftWorker.functions[0];
-    const nftRes = await nftFn.execute(
-      {
-        reply_content: { value: reply.body },
-        received_at: { value: new Date().toISOString() },
-        emotional_tone: { value: reply.emotional_tone ?? 'neutral' },
-      },
-      log
-    );
-
-    const nft = JSON.parse(nftRes.feedback ?? '{}');
-    log(`Pipeline complete: fan=${email.fromEmail}, tier=${nft.tier ?? 'unknown'}`);
+    console.log(`[GAME] Pipeline complete: fan=${email.fromEmail}, tier=${results.nft?.tier ?? 'unknown'}`);
 
     return {
-      replySubject: reply.subject,
-      replyBody: reply.body,
-      claimUrl: nft.claimUrl,
+      replySubject: results.reply.subject,
+      replyBody: results.reply.body,
+      claimUrl: results.nft?.claimUrl,
     };
   } catch (e) {
-    console.error('[GAME] Orchestrator error, falling back to standard pipeline:', e);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err = e as any;
+    if (err?.isAxiosError) {
+      console.error('[GAME] Axios error status:', err.response?.status);
+      console.error('[GAME] Axios error body:', JSON.stringify(err.response?.data, null, 2));
+      console.error('[GAME] Request URL:', err.config?.url);
+      console.error('[GAME] Request payload:', typeof err.config?.data === 'string' ? err.config.data.slice(0, 1000) : err.config?.data);
+    } else {
+      console.error('[GAME] step() pipeline error, falling back to standard pipeline:', e);
+    }
     return null;
   }
 }
