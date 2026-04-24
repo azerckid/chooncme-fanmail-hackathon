@@ -10,18 +10,24 @@
 ## Architecture
 
 ```
-팬 이메일
+팬 이메일 (지갑 주소 포함 시)
     │
     ▼
 Gmail API (수집)
     │
+    ├─── 지갑 주소 파싱 ──▶ Nansen API ──▶ 후원 이력 확인
+    │                            │
+    │                   VIP 팬 여부 결정
+    │                  (에이전트 지갑 수신 이력)
+    │
     ▼
 Flock.io LLM ──(x402 자율 결제)──▶ AgentKit 지갑 (Base Sepolia)
 (분류 + 답장 생성)                        │
-    │                            감정 분석 기반 NFT 민팅
-    │                            ├── Golden Reply NFT  (love/support/joy)
-    │                            ├── Comfort Reply NFT (longing/sadness)
-    │                            └── Standard Reply NFT (neutral)
+    │                            NFT 티어 결정
+    │                            ├── Golden Reply NFT  ◀── VIP 팬 (후원 이력)
+    │                            ├── Golden Reply NFT  ◀── love/support/joy
+    │                            ├── Comfort Reply NFT ◀── longing/sadness
+    │                            └── Standard Reply NFT ◀── neutral
     │                                     │
     ▼                                     ▼
 답장 이메일 발송 ◀────── NFT 클레임 링크 생성
@@ -43,6 +49,7 @@ Flock.io LLM ──(x402 자율 결제)──▶ AgentKit 지갑 (Base Sepolia)
 | Blockchain | Base Sepolia (ERC-721) |
 | Agent Wallet | Coinbase AgentKit (CdpEvmWalletProvider) |
 | Payment | x402 Protocol (M2M autonomous payment) |
+| Fan Analytics | Nansen API (VIP fan on-chain profiling) |
 | Scheduler | Vercel Cron |
 
 ---
@@ -52,6 +59,7 @@ Flock.io LLM ──(x402 자율 결제)──▶ AgentKit 지갑 (Base Sepolia)
 - **AI Fan Reply** — Flock.io LLM이 춘심이 페르소나로 팬레터에 자동 답장
 - **Reply NFT Minting** — AgentKit이 답장을 ERC-721 NFT로 Base에 영구 기록
 - **Emotion-Based Tier** — 감정 분석 결과에 따라 Golden / Comfort / Standard NFT 자동 결정
+- **VIP Fan Commerce** — Nansen이 에이전트 지갑 후원 이력을 조회해 VIP 팬을 자동 식별, Golden NFT + 특별 답장 발행
 - **Autonomous Payment** — 에이전트가 LLM 추론 비용을 x402로 자율 온체인 결제 (Phase 3)
 - **Multi-language** — 팬레터 언어(한/영/일)에 맞춰 자동 답장
 - **Follow-up** — 1주 → 2주 → 4주 → 8주 자동 팔로업
