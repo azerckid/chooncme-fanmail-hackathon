@@ -86,7 +86,15 @@ export async function processWithGame(
       log
     );
 
-    const reply = JSON.parse(replyRes.feedback ?? '{}');
+    let reply: Record<string, string> = {};
+    try {
+      const raw = replyRes.feedback ?? '{}';
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      reply = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
+    } catch {
+      log(`Reply parse failed, feedback: ${replyRes.feedback?.slice(0, 100)}`);
+      return null;
+    }
     if (!reply.body) return null;
 
     log(`Emotional tone from reply plan: ${reply.emotional_tone}`);

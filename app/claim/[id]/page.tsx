@@ -1,4 +1,34 @@
 import Link from 'next/link';
+import { createPublicClient, http, parseAbi } from 'viem';
+import { baseSepolia, base } from 'viem/chains';
+
+async function getNftImage(tokenId: string): Promise<string | null> {
+  const contractAddress = process.env.NFT_CONTRACT_ADDRESS;
+  if (!contractAddress || tokenId.startsWith('0x')) return null;
+
+  try {
+    const network = process.env.BASE_NETWORK ?? 'base-sepolia';
+    const client = createPublicClient({
+      chain: network === 'base-mainnet' ? base : baseSepolia,
+      transport: http(),
+    });
+
+    const tokenURI = await client.readContract({
+      address: contractAddress as `0x${string}`,
+      abi: parseAbi(['function tokenURI(uint256 tokenId) view returns (string)']),
+      functionName: 'tokenURI',
+      args: [BigInt(tokenId)],
+    }) as string;
+
+    if (tokenURI.startsWith('data:application/json;base64,')) {
+      const json = JSON.parse(Buffer.from(tokenURI.split(',')[1], 'base64').toString());
+      return json.image ?? null;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 export default async function ClaimPage({
   params,
@@ -6,6 +36,7 @@ export default async function ClaimPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const nftImage = await getNftImage(id);
   const network = process.env.BASE_NETWORK ?? 'base-sepolia';
   const isMainnet = network === 'base-mainnet';
   const explorerBase = isMainnet
@@ -46,22 +77,38 @@ export default async function ClaimPage({
           textAlign: 'center',
         }}
       >
-        {/* 헤더 */}
-        <div
-          style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '50%',
-            background: '#0052ff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 24px',
-            fontSize: '28px',
-          }}
-        >
-          ✦
-        </div>
+        {/* NFT 이미지 */}
+        {nftImage ? (
+          <img
+            src={nftImage}
+            alt="춘심이 NFT"
+            style={{
+              width: '200px',
+              height: '200px',
+              borderRadius: '16px',
+              objectFit: 'cover',
+              margin: '0 auto 24px',
+              display: 'block',
+              border: '2px solid rgba(0,82,255,0.3)',
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: '#0052ff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
+              fontSize: '28px',
+            }}
+          >
+            ✦
+          </div>
+        )}
 
         <h1
           style={{

@@ -26,6 +26,18 @@ export function getTierFromEmotion(tone: EmotionalTone): NftTier {
   return 'standard';
 }
 
+const NFT_IMAGES = [
+  'bafkreia54qsrou2wxka5rlvub62gjidmffscenu7d5g7rrragkjbktparu',
+  'bafkreick3imgrprtajs36f37ues53pudnmofwciuxdmmxjjqwuzkty5ofq',
+  'bafkreicedpfx2t5wzy56qnupotk33rk3h5rlktvv36um4agh3jkfvshdqq',
+  'bafkreidffh4ksnjjqibspggooli6lyp3gug4nuvggv3aawjsevmwxkcxp4',
+];
+
+function getRandomImageUrl(): string {
+  const cid = NFT_IMAGES[Math.floor(Math.random() * NFT_IMAGES.length)];
+  return `https://gateway.pinata.cloud/ipfs/${cid}`;
+}
+
 function buildMetadata(params: {
   replyContent: string;
   receivedAt: string;
@@ -47,6 +59,7 @@ function buildMetadata(params: {
   return {
     name: `춘심이의 ${tierLabels[params.tier]}`,
     description: '춘심이가 직접 쓴 팬레터 답장입니다. Base 블록체인에 영구 기록되었습니다.',
+    image: getRandomImageUrl(),
     attributes: [
       { trait_type: 'tier', value: params.tier },
       { trait_type: 'date', value: params.receivedAt },

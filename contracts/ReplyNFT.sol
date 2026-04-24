@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * 배포 방법 (Remix IDE):
  * 1. https://remix.ethereum.org 접속
  * 2. 이 파일 붙여넣기
- * 3. Compiler: 0.8.20, Optimization ON
+ * 3. Compiler: 0.8.24 이상, Optimization ON
  * 4. MetaMask를 Base Sepolia로 전환
  * 5. Deploy — AgentKit 지갑 주소로 배포 (onlyOwner 충돌 방지)
  */
@@ -25,7 +25,7 @@ contract ReplyNFT is ERC721URIStorage, Ownable {
         string tokenURI
     );
 
-    constructor() ERC721("Chooncme Reply", "CPLY") Ownable(msg.sender) {}
+    constructor(address initialOwner) ERC721("Chooncme Reply", "CPLY") Ownable(initialOwner) {}
 
     /**
      * @notice 팬레터 답장 NFT 민팅
