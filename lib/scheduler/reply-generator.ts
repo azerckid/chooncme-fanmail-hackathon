@@ -5,6 +5,7 @@
 
 import {
   createReplyClient,
+  createGeminiClientForTask,
   withRetry,
   REPLY_SYSTEM_PROMPT,
   buildReplyUserPrompt,
@@ -51,29 +52,30 @@ export interface GenerateReplyResult {
  * LLM을 사용하여 답장 생성
  */
 export async function generateReply(input: GenerateReplyInput): Promise<GenerateReplyResult> {
+  const userPrompt = buildReplyUserPrompt({
+    fanName: input.fanName,
+    letterSubject: input.letterSubject,
+    letterContent: input.letterContent,
+  });
+
   try {
     const llm = createReplyClient();
-
-    const userPrompt = buildReplyUserPrompt({
-      fanName: input.fanName,
-      letterSubject: input.letterSubject,
-      letterContent: input.letterContent,
-    });
-
     const response = await withRetry(() => llm.chat(REPLY_SYSTEM_PROMPT, userPrompt));
-
-    const reply = parseReplyResponse(response.content);
-
-    return {
-      success: true,
-      reply,
-    };
-  } catch (error) {
-    console.error('[ReplyGenerator] Failed to generate reply:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+    return { success: true, reply: parseReplyResponse(response.content) };
+  } catch (primaryError) {
+    const gemini = createGeminiClientForTask('reply');
+    if (!gemini) {
+      console.error('[ReplyGenerator] Failed to generate reply:', primaryError);
+      return { success: false, error: primaryError instanceof Error ? primaryError.message : 'Unknown error' };
+    }
+    console.warn('[ReplyGenerator] Primary LLM refused/failed, falling back to Gemini');
+    try {
+      const response = await withRetry(() => gemini.chat(REPLY_SYSTEM_PROMPT, userPrompt));
+      return { success: true, reply: parseReplyResponse(response.content) };
+    } catch (error) {
+      console.error('[ReplyGenerator] Failed to generate reply:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
   }
 }
 
@@ -81,27 +83,25 @@ export async function generateReply(input: GenerateReplyInput): Promise<Generate
  * 2단계 답장 생성: 계획 → 작성 (Phase 2)
  */
 export async function generateReplyTwoStep(input: GenerateReplyInput): Promise<GenerateReplyResult> {
-  try {
-    const llm = createReplyClient();
-    const base = {
-      fanName: input.fanName,
-      letterSubject: input.letterSubject,
-      letterContent: input.letterContent,
-    };
+  const base = {
+    fanName: input.fanName,
+    letterSubject: input.letterSubject,
+    letterContent: input.letterContent,
+  };
 
+  async function runTwoStep(llm: ReturnType<typeof createReplyClient>) {
     const planPrompt = buildPlanPrompt(base);
     const planResponse = await withRetry(() => llm.chat(PLAN_SYSTEM_PROMPT, planPrompt));
     const plan = parsePlanResponse(planResponse.content);
 
     console.log('[ReplyGenerator] Two-step plan:', JSON.stringify(plan, null, 2));
 
-    // 분석 데이터를 DB에 업데이트
     await db.update(fanLetters)
       .set({
         sentiment: plan.emotional_tone,
         topics: JSON.stringify(plan.key_topics),
         language: plan.detected_language,
-        senderName: plan.fan_name, // AI가 추출한 더 정확한 이름으로 갱신
+        senderName: plan.fan_name,
       })
       .where(eq(fanLetters.id, (await db.query.fanLetters.findFirst({
         where: (letters, { and, eq }) => and(
@@ -109,22 +109,29 @@ export async function generateReplyTwoStep(input: GenerateReplyInput): Promise<G
           eq(letters.isReplied, false)
         ),
         orderBy: (letters, { desc }) => [desc(letters.receivedAt)]
-      }))?.id || 0)); // 사실 letterId를 직접 넘겨받는 것이 더 안전함. 일단 로직 보강.
+      }))?.id || 0));
 
     const writePrompt = buildWriteUserPrompt({ ...base, plan });
     const writeResponse = await withRetry(() => llm.chat(REPLY_SYSTEM_PROMPT, writePrompt));
-    const reply = parseReplyResponse(writeResponse.content);
+    return parseReplyResponse(writeResponse.content);
+  }
 
-    return {
-      success: true,
-      reply,
-    };
-  } catch (error) {
-    console.error('[ReplyGenerator] Two-step reply failed:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+  try {
+    const llm = createReplyClient();
+    return { success: true, reply: await runTwoStep(llm) };
+  } catch (primaryError) {
+    const gemini = createGeminiClientForTask('reply');
+    if (!gemini) {
+      console.error('[ReplyGenerator] Two-step reply failed:', primaryError);
+      return { success: false, error: primaryError instanceof Error ? primaryError.message : 'Unknown error' };
+    }
+    console.warn('[ReplyGenerator] Primary LLM refused/failed, falling back to Gemini');
+    try {
+      return { success: true, reply: await runTwoStep(gemini) };
+    } catch (error) {
+      console.error('[ReplyGenerator] Two-step reply failed:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
   }
 }
 

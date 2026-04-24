@@ -5,6 +5,7 @@
 
 import {
   createClassifyClient,
+  createGeminiClientForTask,
   withRetry,
   CLASSIFY_SYSTEM_PROMPT,
   buildClassifyUserPrompt,
@@ -28,9 +29,16 @@ export async function classifyEmail(email: EmailMessage): Promise<Classification
     bodyPreview: truncateBodyForClassification(email.bodyPlain, 500),
   });
 
-  const response = await withRetry(() => llm.chat(CLASSIFY_SYSTEM_PROMPT, userPrompt));
-
-  return parseClassifyResponse(response.content);
+  try {
+    const response = await withRetry(() => llm.chat(CLASSIFY_SYSTEM_PROMPT, userPrompt));
+    return parseClassifyResponse(response.content);
+  } catch (primaryError) {
+    const gemini = createGeminiClientForTask('classify');
+    if (!gemini) throw primaryError;
+    console.warn('[Classify] Primary LLM refused/failed, falling back to Gemini');
+    const response = await withRetry(() => gemini.chat(CLASSIFY_SYSTEM_PROMPT, userPrompt));
+    return parseClassifyResponse(response.content);
+  }
 }
 
 /**

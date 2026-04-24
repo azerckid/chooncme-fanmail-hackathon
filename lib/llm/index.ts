@@ -8,6 +8,7 @@ export {
   createLLMClientFromEnv,
   createClassifyClient,
   createReplyClient,
+  createGeminiClientForTask,
   withRetry,
   type LLMProvider,
   type LLMTaskType,

@@ -139,6 +139,16 @@ export function createReplyClient(): ReturnType<typeof createLLMClient> {
 }
 
 /**
+ * Gemini 클라이언트 직접 생성 (폴백용)
+ * GOOGLE_GEMINI_API_KEY 없으면 null 반환
+ */
+export function createGeminiClientForTask(taskType: LLMTaskType = 'reply'): ReturnType<typeof createLLMClient> | null {
+  const geminiKey = process.env.GOOGLE_GEMINI_API_KEY;
+  if (!geminiKey) return null;
+  return createLLMClient({ provider: 'gemini', apiKey: geminiKey, model: getModelForTask('gemini', taskType) });
+}
+
+/**
  * Gemini 클라이언트
  */
 class GeminiClient {
