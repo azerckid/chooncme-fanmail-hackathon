@@ -129,21 +129,21 @@
   </g>
 
   <!-- Node: Nansen -->
-  <g class="node" transform="translate(840,310)">
+  <g class="node" transform="translate(840,360)">
     <rect x="-60" y="-28" width="120" height="56" fill="#1a1200" stroke="#f59e0b" stroke-width="1.5"/>
     <text y="-8">Nansen</text>
     <text class="sub" y="10">VIP 팬 조회</text>
   </g>
 
   <!-- Node: Base Sepolia -->
-  <g class="node" transform="translate(840,400)">
+  <g class="node" transform="translate(840,460)">
     <rect x="-60" y="-28" width="120" height="56" fill="#0a1628" stroke="#0052ff" stroke-width="1"/>
     <text y="-8">Base Sepolia</text>
     <text class="sub" y="10">ERC-721</text>
   </g>
 
   <!-- Node: x402 -->
-  <g class="node" transform="translate(840,530)">
+  <g class="node" transform="translate(840,260)">
     <rect x="-60" y="-28" width="120" height="56" fill="#141518" stroke="#5b616e" stroke-width="1"/>
     <text y="-8">x402</text>
     <text class="sub" y="10">USDC 자율 결제</text>
@@ -196,15 +196,15 @@
 
   <!-- generate_fan_reply → Flock.io -->
   <path id="e-flock-gen" class="edge" d="M 660,400 Q 730,340 760,220 L 778,190" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-  <text class="edge-label" x="726" y="300">LLM 생성</text>
+  <text class="edge-label" x="700" y="280">LLM 생성</text>
 
   <!-- GameAgent → Nansen (VIP 팬 지갑 조회) -->
-  <path id="e-nansen" class="edge" d="M 420,335 Q 590,270 778,300" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/>
-  <text class="edge-label" x="600" y="278" fill="#f59e0b">VIP 팬 조회</text>
+  <path id="e-nansen" class="edge" d="M 420,325 Q 600,258 778,352" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/>
+  <text class="edge-label" x="580" y="270" fill="#f59e0b">VIP 팬 조회</text>
 
   <!-- Nansen → NFTWorker (VIP 티어 오버라이드) -->
-  <path id="e-nansen-tier" class="edge" d="M 778,325 Q 720,410 660,510" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/>
-  <text class="edge-label" x="695" y="430" fill="#f59e0b">VIP 오버라이드</text>
+  <path id="e-nansen-tier" class="edge" d="M 778,375 Q 720,440 660,510" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/>
+  <text class="edge-label" x="718" y="473" fill="#f59e0b">VIP 오버라이드</text>
 
   <!-- Plan → generate (내부 흐름) -->
   <path id="e-plan-gen" class="edge" d="M 580,354 L 580,374" stroke="#0667d0" marker-end="url(#arrow)"/>
@@ -215,20 +215,20 @@
   <text class="edge-label" x="630" y="552">tier</text>
 
   <!-- mint_reply_nft → Base Sepolia -->
-  <path id="e-mint-base" class="edge" d="M 660,580 Q 720,520 760,430 L 778,415" stroke="#22c55e" marker-end="url(#arrow-green)"/>
-  <text class="edge-label" x="723" y="503">NFT 민팅</text>
+  <path id="e-mint-base" class="edge" d="M 660,580 Q 720,535 760,470 L 778,465" stroke="#22c55e" marker-end="url(#arrow-green)"/>
+  <text class="edge-label" x="723" y="535">NFT 민팅</text>
 
-  <!-- mint_reply_nft → x402 -->
-  <path id="e-mint-x402" class="edge" d="M 660,580 Q 710,555 760,545 L 778,540" stroke="#5b616e" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-  <text class="edge-label" x="714" y="571">USDC 결제</text>
+  <!-- Flock.io → x402 (추론 비용 자율 결제) -->
+  <path id="e-flock-x402" class="edge" d="M 900,170 L 942,170 L 942,260 L 902,260" stroke="#578bfa" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
+  <text class="edge-label" x="958" y="215">추론 비용</text>
 
   <!-- generate_fan_reply → 답장 이메일 -->
-  <path id="e-gen-email" class="edge" d="M 660,400 Q 820,370 960,330 L 968,322" stroke="#5b616e" marker-end="url(#arrow)"/>
-  <text class="edge-label" x="815" y="352">이메일 발송</text>
+  <path id="e-gen-email" class="edge" d="M 660,400 Q 760,420 870,418 Q 930,390 968,325" stroke="#5b616e" marker-end="url(#arrow)"/>
+  <text class="edge-label" x="760" y="438">이메일 발송</text>
 
   <!-- Base Sepolia → Reply NFT -->
-  <path id="e-base-nft" class="edge" d="M 900,400 L 968,400" stroke="#0052ff" marker-end="url(#arrow-blue)"/>
-  <text class="edge-label" x="935" y="392">온체인</text>
+  <path id="e-base-nft" class="edge" d="M 900,460 Q 935,430 968,408" stroke="#0052ff" marker-end="url(#arrow-blue)"/>
+  <text class="edge-label" x="935" y="428">온체인</text>
 
   <!-- Reply NFT → 답장 이메일 (클레임 링크) -->
   <path id="e-nft-email" class="edge" d="M 1020,374 L 1020,344" stroke="#0052ff" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
@@ -265,7 +265,7 @@
     { id: 'e-flock-gen',      delay: 1300 },
     { id: 'e-tier-mint',      delay: 1800 },
     { id: 'e-mint-base',      delay: 2300 },
-    { id: 'e-mint-x402',      delay: 2300 },
+    { id: 'e-flock-x402',     delay: 1000 },
     { id: 'e-gen-email',      delay: 2300 },
     { id: 'e-base-nft',       delay: 2800 },
     { id: 'e-nft-email',      delay: 3300 },
