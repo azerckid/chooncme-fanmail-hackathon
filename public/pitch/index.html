@@ -518,66 +518,14 @@
       </div>
     </div>
 
-    <!-- SLIDE 4: Tech Stack -->
-    <div class="slide dark">
-      <div style="text-align:center; margin-bottom:48px;">
-        <div class="badge">Technology</div>
-        <div style="height:24px"></div>
-        <h2>해커톤 요구 기술 5개 전부 통합</h2>
+    <!-- SLIDE 4: Tech Stack (Architecture Graph) -->
+    <div class="slide dark" style="padding: 0; position: relative;">
+      <div style="position:absolute; top:32px; left:50%; transform:translateX(-50%); z-index:10; text-align:center;">
+        <div class="badge">Architecture</div>
+        <div style="height:10px"></div>
+        <h2 style="font-size:32px;">에이전트가 연결하는 방식</h2>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; width:100%;">
-        <div class="card">
-          <h3 style="color:#0052ff; font-size:17px; margin-bottom:12px;">Flock.io</h3>
-          <p style="font-size:15px; margin-bottom:6px;">팬메일 분류</p>
-          <p style="font-size:15px; margin-bottom:6px;">답장 생성 (한/영/일)</p>
-          <p style="font-size:15px;">x402 자율 결제 연동</p>
-        </div>
-        <div class="card">
-          <h3 style="color:#578bfa; font-size:17px; margin-bottom:12px;">AgentKit</h3>
-          <p style="font-size:15px; margin-bottom:6px;">에이전트 전용 지갑</p>
-          <p style="font-size:15px; margin-bottom:6px;">Reply NFT 민팅 서명</p>
-          <p style="font-size:15px;">트랜잭션 자율 실행</p>
-        </div>
-        <div class="card">
-          <h3 style="color:#0667d0; font-size:17px; margin-bottom:12px;">x402</h3>
-          <p style="font-size:15px; margin-bottom:6px;">LLM 추론 비용</p>
-          <p style="font-size:15px; margin-bottom:6px;">에이전트 자율 결제</p>
-          <p style="font-size:15px;">USDC on Base</p>
-        </div>
-        <div class="card">
-          <h3 style="color:#5b616e; font-size:17px; margin-bottom:12px;">Base</h3>
-          <p style="font-size:15px; margin-bottom:6px;">ERC-721 Reply NFT</p>
-          <p style="font-size:15px; margin-bottom:6px;">Golden / Comfort / Standard 티어</p>
-          <p style="font-size:15px;">NFT 클레임 링크 이메일 삽입</p>
-        </div>
-        <div class="card">
-          <h3 style="color:#578bfa; font-size:17px; margin-bottom:12px;">Nansen</h3>
-          <p style="font-size:15px; margin-bottom:6px;">팬 지갑 후원 이력 조회</p>
-          <p style="font-size:15px; margin-bottom:6px;">VIP 팬 자동 식별</p>
-          <p style="font-size:15px;">Base RPC 폴백 지원</p>
-        </div>
-        <div class="card" style="grid-column: span 2;">
-          <h3 style="color:#fff; font-size:17px; margin-bottom:12px;">Virtuals GAME</h3>
-          <div style="display:flex; gap:24px;">
-            <div>
-              <p style="font-size:14px; color:#0052ff; font-weight:600; margin-bottom:4px;">ClassifierWorker</p>
-              <p style="font-size:14px;">팬메일 분류 에이전트</p>
-            </div>
-            <div>
-              <p style="font-size:14px; color:#578bfa; font-weight:600; margin-bottom:4px;">ReplyWorker</p>
-              <p style="font-size:14px;">답장 생성 에이전트</p>
-            </div>
-            <div>
-              <p style="font-size:14px; color:#0667d0; font-weight:600; margin-bottom:4px;">NFTWorker</p>
-              <p style="font-size:14px;">NFT 민팅 에이전트</p>
-            </div>
-            <div>
-              <p style="font-size:14px; color:#5b616e; font-weight:600; margin-bottom:4px;">GameAgent</p>
-              <p style="font-size:14px;">3개 에이전트 조율</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <iframe src="/graph/" style="width:100%; height:100%; border:none; background:#0a0b0d;" scrolling="no"></iframe>
     </div>
 
     <!-- SLIDE 5: Why Base + Why Flock.io -->
