@@ -172,66 +172,66 @@
   <!-- ═══════════════════ EDGES ═══════════════════ -->
 
   <!-- 팬 이메일 → GameAgent -->
-  <path class="edge" d="M 130,350 L 260,350" stroke="#5b616e" marker-end="url(#arrow)"/>
+  <path id="e-input" class="edge" d="M 130,350 L 260,350" stroke="#5b616e" marker-end="url(#arrow)"/>
   <text class="edge-label" x="195" y="340">이메일</text>
 
   <!-- GameAgent → ClassifierWorker -->
-  <path class="edge" d="M 390,318 Q 430,240 480,200 L 498,180" stroke="#578bfa" marker-end="url(#arrow-blue)"/>
+  <path id="e-classify" class="edge" d="M 390,318 Q 430,240 480,200 L 498,180" stroke="#578bfa" marker-end="url(#arrow-blue)"/>
   <text class="edge-label" x="435" y="255">classify</text>
 
   <!-- GameAgent → ReplyWorker -->
-  <path class="edge" d="M 420,350 L 498,350" stroke="#0667d0" marker-end="url(#arrow)"/>
+  <path id="e-reply" class="edge" d="M 420,350 L 498,350" stroke="#0667d0" marker-end="url(#arrow)"/>
   <text class="edge-label" x="460" y="342">reply</text>
 
   <!-- GameAgent → NFTWorker (emotional_tone) -->
-  <path class="edge" d="M 390,382 Q 430,460 480,510 L 498,510" stroke="#22c55e" marker-end="url(#arrow-green)"/>
+  <path id="e-nft-flow" class="edge" d="M 390,382 Q 430,460 480,510 L 498,510" stroke="#22c55e" marker-end="url(#arrow-green)"/>
   <text class="edge-label" x="432" y="475">emotional_tone</text>
 
   <!-- ClassifierWorker → Flock.io -->
-  <path class="edge" d="M 660,165 Q 720,165 760,165 L 778,165" stroke="#578bfa" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
+  <path id="e-flock-classify" class="edge" d="M 660,165 Q 720,165 760,165 L 778,165" stroke="#578bfa" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
   <text class="edge-label" x="720" y="157">LLM 분류</text>
 
   <!-- Plan (감정분석) → Flock.io -->
-  <path class="edge" d="M 660,330 Q 720,280 760,210 L 778,185" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <path id="e-flock-plan" class="edge" d="M 660,330 Q 720,280 760,210 L 778,185" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
 
   <!-- generate_fan_reply → Flock.io -->
-  <path class="edge" d="M 660,400 Q 730,340 760,220 L 778,190" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <path id="e-flock-gen" class="edge" d="M 660,400 Q 730,340 760,220 L 778,190" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
   <text class="edge-label" x="726" y="300">LLM 생성</text>
 
   <!-- GameAgent → Nansen (VIP 팬 지갑 조회) -->
-  <path class="edge" d="M 420,335 Q 590,270 778,300" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/>
+  <path id="e-nansen" class="edge" d="M 420,335 Q 590,270 778,300" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/>
   <text class="edge-label" x="600" y="278" fill="#f59e0b">VIP 팬 조회</text>
 
   <!-- Nansen → NFTWorker (VIP 티어 오버라이드) -->
-  <path class="edge" d="M 778,325 Q 720,410 660,510" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/>
+  <path id="e-nansen-tier" class="edge" d="M 778,325 Q 720,410 660,510" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/>
   <text class="edge-label" x="695" y="430" fill="#f59e0b">VIP 오버라이드</text>
 
   <!-- Plan → generate (내부 흐름) -->
-  <path class="edge" d="M 580,354 L 580,374" stroke="#0667d0" marker-end="url(#arrow)"/>
+  <path id="e-plan-gen" class="edge" d="M 580,354 L 580,374" stroke="#0667d0" marker-end="url(#arrow)"/>
   <text class="edge-label" x="620" y="367">emotional_tone</text>
 
   <!-- getTierFromEmotion → mint_reply_nft (내부 흐름) -->
-  <path class="edge" d="M 580,544 L 580,554" stroke="#22c55e" marker-end="url(#arrow-green)"/>
+  <path id="e-tier-mint" class="edge" d="M 580,544 L 580,554" stroke="#22c55e" marker-end="url(#arrow-green)"/>
   <text class="edge-label" x="630" y="552">tier</text>
 
   <!-- mint_reply_nft → Base Sepolia -->
-  <path class="edge" d="M 660,580 Q 720,520 760,430 L 778,415" stroke="#22c55e" marker-end="url(#arrow-green)"/>
+  <path id="e-mint-base" class="edge" d="M 660,580 Q 720,520 760,430 L 778,415" stroke="#22c55e" marker-end="url(#arrow-green)"/>
   <text class="edge-label" x="723" y="503">NFT 민팅</text>
 
   <!-- mint_reply_nft → x402 -->
-  <path class="edge" d="M 660,580 Q 710,555 760,545 L 778,540" stroke="#5b616e" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <path id="e-mint-x402" class="edge" d="M 660,580 Q 710,555 760,545 L 778,540" stroke="#5b616e" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
   <text class="edge-label" x="714" y="571">USDC 결제</text>
 
   <!-- generate_fan_reply → 답장 이메일 -->
-  <path class="edge" d="M 660,400 Q 820,370 960,330 L 968,322" stroke="#5b616e" marker-end="url(#arrow)"/>
+  <path id="e-gen-email" class="edge" d="M 660,400 Q 820,370 960,330 L 968,322" stroke="#5b616e" marker-end="url(#arrow)"/>
   <text class="edge-label" x="815" y="352">이메일 발송</text>
 
   <!-- Base Sepolia → Reply NFT -->
-  <path class="edge" d="M 900,400 L 968,400" stroke="#0052ff" marker-end="url(#arrow-blue)"/>
+  <path id="e-base-nft" class="edge" d="M 900,400 L 968,400" stroke="#0052ff" marker-end="url(#arrow-blue)"/>
   <text class="edge-label" x="935" y="392">온체인</text>
 
   <!-- Reply NFT → 답장 이메일 (클레임 링크) -->
-  <path class="edge" d="M 1020,374 L 1020,344" stroke="#0052ff" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
+  <path id="e-nft-email" class="edge" d="M 1020,374 L 1020,344" stroke="#0052ff" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
   <text class="edge-label" x="1058" y="361">클레임 URL</text>
 
   <!-- ═══ 범례 ═══ -->
@@ -249,5 +249,81 @@
     <text font-size="11" fill="#5b616e" x="35" y="104">Nansen VIP 조회</text>
   </g>
 </svg>
+<script>
+  // 순차 화살표 드로잉 애니메이션
+  // delay: 각 엣지가 나타나는 시점 (ms)
+  const SEQUENCE = [
+    { id: 'e-input',          delay: 0    },
+    { id: 'e-classify',       delay: 500  },
+    { id: 'e-reply',          delay: 500  },
+    { id: 'e-nft-flow',       delay: 500  },
+    { id: 'e-nansen',         delay: 500  },
+    { id: 'e-flock-classify', delay: 1000 },
+    { id: 'e-flock-plan',     delay: 1000 },
+    { id: 'e-plan-gen',       delay: 1000 },
+    { id: 'e-nansen-tier',    delay: 1200 },
+    { id: 'e-flock-gen',      delay: 1300 },
+    { id: 'e-tier-mint',      delay: 1800 },
+    { id: 'e-mint-base',      delay: 2300 },
+    { id: 'e-mint-x402',      delay: 2300 },
+    { id: 'e-gen-email',      delay: 2300 },
+    { id: 'e-base-nft',       delay: 2800 },
+    { id: 'e-nft-email',      delay: 3300 },
+  ];
+
+  function animatePath(id, delay) {
+    const path = document.getElementById(id);
+    if (!path) return;
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    path.style.opacity = '0';
+    setTimeout(() => {
+      path.style.opacity = '1';
+      path.style.transition = 'stroke-dashoffset 0.7s cubic-bezier(0.4, 0, 0.2, 1)';
+      path.style.strokeDashoffset = '0';
+    }, delay);
+  }
+
+  function resetPaths() {
+    SEQUENCE.forEach(({ id }) => {
+      const path = document.getElementById(id);
+      if (!path) return;
+      path.style.transition = 'none';
+      path.style.opacity = '0';
+      path.style.strokeDashoffset = path.getTotalLength();
+    });
+  }
+
+  // 마지막 애니메이션 완료 후 재시작까지 대기 시간 (ms)
+  const LOOP_PAUSE = 1200;
+  const TOTAL_ANIM = 3300 + 700; // 마지막 delay + 드로잉 duration
+  let loopTimer = null;
+
+  function startAnimation() {
+    clearTimeout(loopTimer);
+    resetPaths();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        SEQUENCE.forEach(({ id, delay }) => animatePath(id, delay));
+        loopTimer = setTimeout(startAnimation, TOTAL_ANIM + LOOP_PAUSE);
+      });
+    });
+  }
+
+  function stopAnimation() {
+    clearTimeout(loopTimer);
+    loopTimer = null;
+  }
+
+  // 페이지 로드 시 자동 실행
+  window.addEventListener('load', startAnimation);
+
+  // 피치덱 iframe postMessage 수신
+  window.addEventListener('message', (e) => {
+    if (e.data === 'startAnimation') startAnimation();
+    if (e.data === 'stopAnimation') stopAnimation();
+  });
+</script>
 </body>
 </html>
