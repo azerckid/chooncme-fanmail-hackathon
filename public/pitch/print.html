@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Creator Agent Platform — Print</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0b0d;
+      color: #fff;
+    }
+
+    .page {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px;
+      page-break-after: always;
+      break-after: page;
+      position: relative;
+      background: #0a0b0d;
+    }
+
+    .page.blue { background: #0052ff; }
+
+    @media print {
+      body { background: #0a0b0d; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { width: 100%; height: 100vh; }
+    }
+
+    h1 { font-size: 52px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; }
+    h2 { font-size: 40px; font-weight: 800; letter-spacing: -1px; }
+    h3 { font-size: 24px; font-weight: 700; }
+    p  { color: #8892a0; line-height: 1.6; }
+
+    .accent { color: #0052ff; }
+    .badge {
+      display: inline-block;
+      background: rgba(0,82,255,0.12);
+      border: 1px solid rgba(0,82,255,0.3);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #578bfa;
+    }
+    .divider { width: 40px; height: 3px; background: #0052ff; border-radius: 2px; margin: 24px 0; }
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 4px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; width: 100%; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 24px; width: 100%; }
+
+    .card {
+      background: #141518;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 32px;
+    }
+    .card.stat { text-align: center; }
+    .card .num { font-size: 56px; font-weight: 800; color: #0052ff; line-height: 1; }
+    .card .label { font-size: 14px; color: #5b616e; margin-top: 8px; }
+
+    .flow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .flow-step {
+      background: #141518;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .flow-arrow { color: #5b616e; font-size: 20px; }
+
+    .nft-tier { display: flex; gap: 16px; margin-top: 24px; width: 100%; }
+    .nft-card { flex: 1; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+    .nft-card .title { font-size: 14px; font-weight: 700; color: #fff; }
+    .nft-card .desc { font-size: 12px; color: #5b616e; margin-top: 4px; }
+    .golden { background: linear-gradient(135deg,rgba(0,82,255,0.2),rgba(87,139,250,0.1)); }
+    .comfort { background: linear-gradient(135deg,rgba(40,43,49,0.8),rgba(40,43,49,0.4)); }
+    .standard { background: rgba(20,21,24,0.8); }
+
+    .why-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .why-dot { width: 8px; height: 8px; border-radius: 50%; background: #0052ff; margin-top: 8px; flex-shrink: 0; }
+
+    .dash-stat { text-align: center; }
+    .dash-stat .num { font-size: 40px; font-weight: 800; color: #0052ff; line-height: 1; }
+    .dash-stat .label { font-size: 13px; color: #5b616e; margin-top: 4px; }
+
+    .bar-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .bar-label { width: 60px; color: #8892a0; text-align: right; flex-shrink: 0; }
+    .bar-track { flex: 1; background: #1e2024; border-radius: 4px; height: 8px; }
+    .bar-fill { height: 100%; border-radius: 4px; background: #0052ff; }
+    .bar-pct { width: 32px; color: #578bfa; font-size: 12px; }
+
+    /* graph page */
+    .graph-page {
+      width: 100vw;
+      height: 100vh;
+      background: #0a0b0d;
+      display: flex;
+      flex-direction: column;
+      page-break-after: always;
+      break-after: page;
+    }
+    .graph-page svg { width: 100%; height: 100%; }
+
+    /* show all graph paths for print */
+    .graph-page path.edge { opacity: 1 !important; stroke-dashoffset: 0 !important; }
+  </style>
+</head>
+<body>
+
+<!-- SLIDE 1: Hook -->
+<div class="page">
+  <div class="badge">Base Agent Hackathon #1</div>
+  <div style="height:32px"></div>
+  <h1 style="text-align:center; max-width:900px;">
+    The fan who supported knows.<br/>
+    <span class="accent">Agents never forget.</span>
+  </h1>
+  <div class="divider"></div>
+  <p style="text-align:center; max-width:600px; font-size:22px;">
+    On-chain contributions transform off-chain experiences<br/>
+    Agentic Commerce Social Agent on Base.
+  </p>
+  <div style="margin-top:32px; background:rgba(0,82,255,0.1); border:1px solid rgba(0,82,255,0.3); border-radius:12px; padding:20px 40px; text-align:center;">
+    <p style="font-size:18px; color:#fff; font-weight:600; margin-bottom:8px;">Try it right now. You will get a reply during this talk.</p>
+    <p style="font-size:24px; color:#0052ff; font-weight:800; letter-spacing:1px;">choon.cme@gmail.com</p>
+  </div>
+</div>
+
+<!-- SLIDE 2: Traction -->
+<div class="page">
+  <div style="text-align:center; margin-bottom:48px;">
+    <div class="badge">Real-World Traction</div>
+    <div style="height:24px"></div>
+    <h2>It is already working</h2>
+  </div>
+  <div class="grid-3">
+    <div class="card stat"><div class="num">33K</div><div class="label">X (Twitter) Fandom</div></div>
+    <div class="card stat"><div class="num">228</div><div class="label">Fan Letters / Month</div></div>
+    <div class="card stat"><div class="num">23</div><div class="label">Core Fan Exchanges</div></div>
+  </div>
+  <div style="margin-top:32px; text-align:center;">
+    <p style="font-size:18px; color:#578bfa; font-weight:600;">"This is not a hypothesis. It's the Web3 evolution of a product with explosive traffic."</p>
+  </div>
+</div>
+
+<!-- SLIDE 3: Solution -->
+<div class="page">
+  <div style="text-align:center; margin-bottom:48px;">
+    <div class="badge">Solution</div>
+    <div style="height:24px"></div>
+    <h2>Agents think and act autonomously</h2>
+  </div>
+  <div class="flow">
+    <div class="flow-step">Receive Fan Letter</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:4px;">Flock.io LLM</div><div style="font-size:13px;color:#5b616e;">Sentiment Analysis + Reply Gen</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:4px;">AgentKit</div><div style="font-size:13px;color:#5b616e;">Mint Reply NFT</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Reply + Claim Link</div>
+  </div>
+  <div style="margin-top:16px; margin-bottom:24px; text-align:center;">
+    <span style="font-size:13px; color:#578bfa; font-weight:600;">Virtuals GAME</span>
+    <span style="font-size:13px; color:#5b616e;"> orchestrates this entire pipeline</span>
+  </div>
+  <div class="nft-tier">
+    <div class="nft-card golden"><div class="title">Golden Reply NFT</div><div class="desc">love / support / joy / gratitude<br/><span style="color:#578bfa;font-size:11px;">+ VIP Supported Fan</span></div></div>
+    <div class="nft-card comfort"><div class="title">Comfort Reply NFT</div><div class="desc">longing / sadness / concern</div></div>
+    <div class="nft-card standard"><div class="title">Standard Reply NFT</div><div class="desc">neutral</div></div>
+  </div>
+</div>
+
+<!-- SLIDE 4: Agentic Commerce -->
+<div class="page">
+  <div style="text-align:center; margin-bottom:48px;">
+    <div class="badge">Agentic Commerce</div>
+    <div style="height:24px"></div>
+    <h2>On-chain support changes the off-chain experience</h2>
+  </div>
+  <div class="grid-2">
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div class="card" style="border-color:rgba(0,82,255,0.4);">
+        <p style="font-size:13px;font-weight:700;color:#578bfa;margin-bottom:12px;">Regular Fan</p>
+        <div class="flow" style="justify-content:flex-start;flex-wrap:nowrap;gap:8px;">
+          <div class="flow-step" style="font-size:13px;padding:8px 14px;">Send Fan Mail</div>
+          <div class="flow-arrow" style="font-size:16px;">→</div>
+          <div class="flow-step" style="font-size:13px;padding:8px 14px;">Sentiment Analysis</div>
+          <div class="flow-arrow" style="font-size:16px;">→</div>
+          <div class="flow-step" style="font-size:13px;padding:8px 14px;">Standard / Comfort NFT</div>
+        </div>
+      </div>
+      <div class="card" style="border-color:rgba(0,82,255,0.8);background:linear-gradient(135deg,rgba(0,82,255,0.12),rgba(87,139,250,0.06));">
+        <p style="font-size:13px;font-weight:700;color:#0052ff;margin-bottom:12px;">VIP Fan (Has Support History)</p>
+        <div class="flow" style="justify-content:flex-start;flex-wrap:nowrap;gap:8px;">
+          <div class="flow-step" style="font-size:13px;padding:8px 14px;">Fan Mail + Wallet Address</div>
+          <div class="flow-arrow" style="font-size:16px;">→</div>
+          <div class="flow-step" style="font-size:13px;padding:8px 14px;border-color:rgba(0,82,255,0.5);">Nansen Verification</div>
+          <div class="flow-arrow" style="font-size:16px;">→</div>
+          <div class="flow-step" style="font-size:13px;padding:8px 14px;border-color:rgba(0,82,255,0.5);color:#578bfa;font-weight:700;">Golden NFT + Special Reply</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:18px;color:#fff;margin-bottom:20px;">Why is it powerful?</h3>
+      <div class="why-item"><div class="why-dot"></div><div><p style="font-size:15px;color:#fff;margin-bottom:2px;">Agent Autonomously Identifies Fans</p><p style="font-size:13px;">Verifies AgentKit wallet receipt history via Nansen without human intervention</p></div></div>
+      <div class="why-item"><div class="why-dot"></div><div><p style="font-size:15px;color:#fff;margin-bottom:2px;">On-chain Contribution = Off-chain Reward</p><p style="font-size:13px;">A complete Agentic Commerce loop where payment determines service quality</p></div></div>
+      <div class="why-item"><div class="why-dot"></div><div><p style="font-size:15px;color:#fff;margin-bottom:2px;">No Risk with Nansen Fallback Design</p><p style="font-size:13px;">Auto-switches to direct Base RPC queries when API is unstable</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: Architecture Graph (inline SVG) -->
+<div class="graph-page">
+<svg viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" style="background:#0a0b0d;">
+  <style>
+    .node rect { rx: 10; ry: 10; }
+    .node text { font-size: 13px; font-weight: 600; fill: #fff; text-anchor: middle; dominant-baseline: middle; font-family: -apple-system, sans-serif; }
+    .node .sub { font-size: 11px; font-weight: 400; fill: rgba(255,255,255,0.6); }
+    .edge { fill: none; stroke-width: 1.5; }
+    .edge-label { font-size: 11px; fill: #5b616e; text-anchor: middle; font-family: -apple-system, sans-serif; }
+    .group rect { rx: 16; ry: 16; fill: none; stroke-dasharray: 4,3; stroke-width: 1; }
+    .group-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; font-family: -apple-system, sans-serif; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5b616e"/></marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0052ff"/></marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#22c55e"/></marker>
+    <marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/></marker>
+  </defs>
+  <g class="group"><rect x="20" y="290" width="120" height="120" stroke="#5b616e" opacity="0.3"/><text class="group-label" x="80" y="278" fill="#5b616e">INPUT</text></g>
+  <g class="node" transform="translate(80,350)"><rect x="-50" y="-28" width="100" height="56" fill="#282b31" stroke="#5b616e" stroke-width="1"/><text y="-8">Fan Email</text><text class="sub" y="10">Gmail</text></g>
+  <g class="group"><rect x="170" y="60" width="760" height="580" stroke="#0052ff" opacity="0.25"/><text class="group-label" x="550" y="48" fill="#0052ff" text-anchor="middle">VIRTUALS GAME + ACP ORCHESTRATOR</text></g>
+  <g class="node" transform="translate(340,350)"><rect x="-80" y="-32" width="160" height="64" fill="#0052ff" stroke="#578bfa" stroke-width="1.5"/><text y="-10">GameAgent</text><text class="sub" y="10">Orchestrator</text></g>
+  <g class="group"><rect x="480" y="90" width="200" height="140" stroke="#578bfa" opacity="0.3"/><text class="group-label" x="580" y="80" fill="#578bfa" text-anchor="middle">ClassifierWorker</text></g>
+  <g class="node" transform="translate(580,165)"><rect x="-80" y="-28" width="160" height="56" fill="#141518" stroke="#578bfa" stroke-width="1"/><text y="-8">classify_fan_email</text><text class="sub" y="10">fan | general</text></g>
+  <g class="group"><rect x="480" y="270" width="200" height="160" stroke="#0667d0" opacity="0.3"/><text class="group-label" x="580" y="260" fill="#0667d0" text-anchor="middle">ReplyWorker</text></g>
+  <g class="node" transform="translate(580,330)"><rect x="-80" y="-24" width="160" height="48" fill="#141518" stroke="#0667d0" stroke-width="1"/><text y="-6">Sentiment Analysis (Plan)</text><text class="sub" y="12">emotional_tone</text></g>
+  <g class="node" transform="translate(580,400)"><rect x="-80" y="-24" width="160" height="48" fill="#141518" stroke="#0667d0" stroke-width="1"/><text y="-6">generate_fan_reply</text><text class="sub" y="12">subject + body</text></g>
+  <g class="group"><rect x="480" y="465" width="200" height="140" stroke="#22c55e" opacity="0.25"/><text class="group-label" x="580" y="455" fill="#22c55e" text-anchor="middle">NFTWorker</text></g>
+  <g class="node" transform="translate(580,520)"><rect x="-80" y="-24" width="160" height="48" fill="#141518" stroke="#22c55e" stroke-width="1"/><text y="-6">getTierFromEmotion</text><text class="sub" y="12">+ VIP Override → Golden</text></g>
+  <g class="node" transform="translate(580,580)"><rect x="-80" y="-24" width="160" height="48" fill="#141518" stroke="#22c55e" stroke-width="1"/><text y="-6">mint_reply_nft</text><text class="sub" y="12">AgentKit + viem</text></g>
+  <g class="group"><rect x="760" y="90" width="160" height="580" stroke="#5b616e" opacity="0.2"/><text class="group-label" x="840" y="80" fill="#5b616e" text-anchor="middle">EXTERNAL</text></g>
+  <g class="node" transform="translate(840,170)"><rect x="-60" y="-28" width="120" height="56" fill="#1a1f35" stroke="#578bfa" stroke-width="1"/><text y="-8">Flock.io</text><text class="sub" y="10">Web3 LLM</text></g>
+  <g class="node" transform="translate(840,360)"><rect x="-60" y="-28" width="120" height="56" fill="#1a1200" stroke="#f59e0b" stroke-width="1.5"/><text y="-8">Nansen</text><text class="sub" y="10">VIP Fan Lookup</text></g>
+  <g class="node" transform="translate(840,460)"><rect x="-60" y="-28" width="120" height="56" fill="#0a1628" stroke="#0052ff" stroke-width="1"/><text y="-8">Base Sepolia</text><text class="sub" y="10">ERC-721</text></g>
+  <g class="node" transform="translate(840,260)"><rect x="-60" y="-28" width="120" height="56" fill="#141518" stroke="#5b616e" stroke-width="1"/><text y="-8">x402</text><text class="sub" y="10">USDC Auto-payment</text></g>
+  <g class="group"><rect x="960" y="270" width="120" height="160" stroke="#5b616e" opacity="0.3"/><text class="group-label" x="1020" y="258" fill="#5b616e" text-anchor="middle">OUTPUT</text></g>
+  <g class="node" transform="translate(1020,320)"><rect x="-50" y="-24" width="100" height="48" fill="#282b31" stroke="#5b616e" stroke-width="1"/><text y="-6">Reply Email</text><text class="sub" y="10">+ Claim Link</text></g>
+  <g class="node" transform="translate(1020,400)"><rect x="-50" y="-24" width="100" height="48" fill="#0a1628" stroke="#0052ff" stroke-width="1"/><text y="-6">Reply NFT</text><text class="sub" y="10">On-chain Record</text></g>
+  <path class="edge" d="M 130,350 L 260,350" stroke="#5b616e" marker-end="url(#arrow)"/><text class="edge-label" x="195" y="340">Email</text>
+  <path class="edge" d="M 390,318 Q 430,240 480,200 L 498,180" stroke="#578bfa" marker-end="url(#arrow-blue)"/><text class="edge-label" x="435" y="255">classify</text>
+  <path class="edge" d="M 420,350 L 498,350" stroke="#0667d0" marker-end="url(#arrow)"/><text class="edge-label" x="460" y="342">reply</text>
+  <path class="edge" d="M 390,382 Q 430,460 480,510 L 498,510" stroke="#22c55e" marker-end="url(#arrow-green)"/><text class="edge-label" x="432" y="475">emotional_tone</text>
+  <path class="edge" d="M 660,165 Q 720,165 760,165 L 778,165" stroke="#578bfa" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/><text class="edge-label" x="720" y="157">LLM Classification</text>
+  <path class="edge" d="M 660,330 Q 720,280 760,210 L 778,185" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <path class="edge" d="M 660,400 Q 730,340 760,220 L 778,190" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/><text class="edge-label" x="700" y="280">LLM Generation</text>
+  <path class="edge" d="M 420,325 Q 600,258 778,352" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/><text class="edge-label" x="580" y="270" fill="#f59e0b">VIP Lookup</text>
+  <path class="edge" d="M 778,375 Q 720,440 660,510" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/><text class="edge-label" x="718" y="473" fill="#f59e0b">VIP Override</text>
+  <path class="edge" d="M 580,354 L 580,374" stroke="#0667d0" marker-end="url(#arrow)"/><text class="edge-label" x="620" y="367">emotional_tone</text>
+  <path class="edge" d="M 580,544 L 580,554" stroke="#22c55e" marker-end="url(#arrow-green)"/><text class="edge-label" x="630" y="552">tier</text>
+  <path class="edge" d="M 660,580 Q 720,535 760,470 L 778,465" stroke="#22c55e" marker-end="url(#arrow-green)"/><text class="edge-label" x="723" y="535">Mint NFT</text>
+  <path class="edge" d="M 900,170 L 942,170 L 942,260 L 902,260" stroke="#578bfa" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/><text class="edge-label" x="958" y="215">Inference Cost</text>
+  <path class="edge" d="M 660,400 Q 760,420 870,418 Q 930,390 968,325" stroke="#5b616e" marker-end="url(#arrow)"/><text class="edge-label" x="760" y="438">Send Email</text>
+  <path class="edge" d="M 900,460 Q 935,430 968,408" stroke="#0052ff" marker-end="url(#arrow-blue)"/><text class="edge-label" x="935" y="428">On-chain</text>
+  <path class="edge" d="M 1020,374 L 1020,344" stroke="#0052ff" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/><text class="edge-label" x="1058" y="361">Claim URL</text>
+  <g transform="translate(30,560)">
+    <text font-size="12" fill="#5b616e" font-weight="700" font-family="-apple-system,sans-serif">Legend</text>
+    <line x1="0" y1="20" x2="30" y2="20" stroke="#578bfa" stroke-width="1.5"/><text font-size="11" fill="#5b616e" x="35" y="24" font-family="-apple-system,sans-serif">GAME Worker Call</text>
+    <line x1="0" y1="40" x2="30" y2="40" stroke="#22c55e" stroke-width="1.5"/><text font-size="11" fill="#5b616e" x="35" y="44" font-family="-apple-system,sans-serif">Emotion → NFT Tier</text>
+    <line x1="0" y1="60" x2="30" y2="60" stroke="#5b616e" stroke-width="1.5" stroke-dasharray="4,3"/><text font-size="11" fill="#5b616e" x="35" y="64" font-family="-apple-system,sans-serif">External API Call</text>
+    <line x1="0" y1="80" x2="30" y2="80" stroke="#0052ff" stroke-width="1.5"/><text font-size="11" fill="#5b616e" x="35" y="84" font-family="-apple-system,sans-serif">On-chain Tx</text>
+    <line x1="0" y1="100" x2="30" y2="100" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/><text font-size="11" fill="#5b616e" x="35" y="104" font-family="-apple-system,sans-serif">Nansen VIP Lookup</text>
+  </g>
+</svg>
+</div>
+
+<!-- SLIDE 6: Why Base & Flock.io -->
+<div class="page">
+  <div style="text-align:center; margin-bottom:48px;">
+    <div class="badge">Technology Choice</div>
+    <div style="height:24px"></div>
+    <h2>Why Base &amp; Flock.io?</h2>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h3 style="color:#578bfa;font-size:20px;margin-bottom:20px;">Why Flock.io</h3>
+      <div class="why-item"><div class="why-dot"></div><div><p style="font-size:16px;color:#fff;margin-bottom:2px;">Web3 Native LLM</p><p style="font-size:14px;">Specialized for agent ecosystems, understands on-chain context</p></div></div>
+      <div class="why-item"><div class="why-dot"></div><div><p style="font-size:16px;color:#fff;margin-bottom:2px;">x402 Payment Internalization</p><p style="font-size:14px;">Autonomous inference payment at HTTP layer — no separate payment module required</p></div></div>
+      <div class="why-item"><div class="why-dot"></div><div><p style="font-size:16px;color:#fff;margin-bottom:2px;">Agent Autonomous Inference</p><p style="font-size:14px;">Independent inference per Worker, seamlessly integrating with GAME architecture</p></div></div>
+    </div>
+    <div class="card">
+      <h3 style="color:#0052ff;font-size:20px;margin-bottom:20px;">Why Base</h3>
+      <div class="why-item"><div class="why-dot"></div><div><p style="font-size:16px;color:#fff;margin-bottom:2px;">Native AgentKit Support</p><p style="font-size:14px;">AgentKit wallets work most seamlessly on the chain built by Coinbase</p></div></div>
+      <div class="why-item"><div class="why-dot"></div><div><p style="font-size:16px;color:#fff;margin-bottom:2px;">Low Gas + Native USDC On-chain</p><p style="font-size:14px;">NFT minting costs just cents per fan — enabling large-scale operations</p></div></div>
+      <div class="why-item"><div class="why-dot"></div><div><p style="font-size:16px;color:#fff;margin-bottom:2px;">EVM Compatible Ecosystem</p><p style="font-size:14px;">ERC-721 standard NFT, IPFS integration, proven infrastructure</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: Dashboard -->
+<div class="page">
+  <div style="text-align:center; margin-bottom:48px;">
+    <div class="badge">Live System</div>
+    <div style="height:24px"></div>
+    <h2>Operating in Real-time</h2>
+  </div>
+  <div class="grid-2">
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card" style="padding:24px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div class="dash-stat"><div class="num">228</div><div class="label">Total Fan Letters Received</div></div>
+          <div class="dash-stat"><div class="num">23</div><div class="label">Core Fans (Exchanged)</div></div>
+          <div class="dash-stat"><div class="num" style="font-size:28px;">EN/KR/JP</div><div class="label">Multi-language Auto-detection</div></div>
+          <div class="dash-stat"><div class="num">90 Days</div><div class="label">Inbound Trend Monitoring</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:20px;">
+        <p style="font-size:13px;font-weight:700;color:#578bfa;margin-bottom:12px;">Sentiment Distribution</p>
+        <div class="bar-wrap">
+          <div class="bar-row"><span class="bar-label">love</span><div class="bar-track"><div class="bar-fill" style="width:62%"></div></div><span class="bar-pct">62%</span></div>
+          <div class="bar-row"><span class="bar-label">support</span><div class="bar-track"><div class="bar-fill" style="width:18%;background:#578bfa;"></div></div><span class="bar-pct">18%</span></div>
+          <div class="bar-row"><span class="bar-label">longing</span><div class="bar-track"><div class="bar-fill" style="width:12%;background:#5b616e;"></div></div><span class="bar-pct">12%</span></div>
+          <div class="bar-row"><span class="bar-label">Others</span><div class="bar-track"><div class="bar-fill" style="width:8%;background:#282b31;"></div></div><span class="bar-pct">8%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:16px;">
+      <p style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">Automation Pipeline</p>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;align-items:center;gap:12px;"><div style="width:32px;height:32px;border-radius:50%;background:#0052ff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">1</div><div><p style="color:#fff;font-size:15px;font-weight:600;">Gmail API Collection</p><p style="font-size:13px;">Hourly Auto-polling</p></div></div>
+        <div style="display:flex;align-items:center;gap:12px;"><div style="width:32px;height:32px;border-radius:50%;background:#0052ff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">2</div><div><p style="color:#fff;font-size:15px;font-weight:600;">GAME Agent Processing</p><p style="font-size:13px;">Classification → Reply Gen → NFT Minting</p></div></div>
+        <div style="display:flex;align-items:center;gap:12px;"><div style="width:32px;height:32px;border-radius:50%;background:#0052ff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">3</div><div><p style="color:#fff;font-size:15px;font-weight:600;">Random Delay Sending</p><p style="font-size:13px;">10-30 min Natural Reply Delay</p></div></div>
+        <div style="display:flex;align-items:center;gap:12px;"><div style="width:32px;height:32px;border-radius:50%;background:#282b31;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">4</div><div><p style="color:#fff;font-size:15px;font-weight:600;">Follow-up Scheduling</p><p style="font-size:13px;">1w → 2w → 4w → 8w Auto-reconnect</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: Business Model -->
+<div class="page">
+  <div style="text-align:center; margin-bottom:48px;">
+    <div class="badge">Agentic Commerce</div>
+    <div style="height:24px"></div>
+    <h2>Agents autonomously execute operating costs</h2>
+  </div>
+  <div class="card" style="max-width:700px;width:100%;">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div style="display:flex;align-items:center;gap:16px;"><div style="width:40px;height:40px;border-radius:50%;background:#0052ff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">C</div><div><p style="color:#fff;font-weight:600;margin-bottom:2px;">Creator</p><p style="font-size:16px;">Agent deployment subscription → Pays platform</p></div></div>
+      <div style="display:flex;align-items:center;gap:16px;"><div style="width:40px;height:40px;border-radius:50%;background:#282b31;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">P</div><div><p style="color:#fff;font-weight:600;margin-bottom:2px;">Platform</p><p style="font-size:16px;">Tops up USDC to AgentKit wallet</p></div></div>
+      <div style="display:flex;align-items:center;gap:16px;"><div style="width:40px;height:40px;border-radius:50%;background:#0052ff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">A</div><div><p style="color:#fff;font-weight:600;margin-bottom:2px;">Agent</p><p style="font-size:16px;">Upon receiving fan mail, uses x402 for <strong style="color:#578bfa;">Autonomous On-chain Payment</strong> of Flock.io inference costs</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: Closing -->
+<div class="page blue">
+  <h1 style="text-align:center;max-width:900px;color:#fff;">Chooncme is<br/>the first instance.</h1>
+  <div style="height:32px"></div>
+  <h3 style="color:rgba(255,255,255,0.8);font-weight:400;text-align:center;">Next could be your favorite idol.</h3>
+  <div style="height:48px"></div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+    <span class="tag">Flock.io</span>
+    <span class="tag">AgentKit</span>
+    <span class="tag">x402</span>
+    <span class="tag">Base</span>
+    <span class="tag">Virtuals GAME</span>
+    <span class="tag">Reply NFT</span>
+    <span class="tag">Nansen</span>
+    <span class="tag">VIP Fan</span>
+  </div>
+</div>
+
+</body>
+</html>
