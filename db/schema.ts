@@ -26,6 +26,10 @@ export const fanLetters = sqliteTable("fan_letters", {
     isReplied: integer("is_replied", { mode: "boolean" }).default(false),
     repliedAt: text("replied_at"),                // 답장 일시 (ISO 8601). NULL이면 미답장
 
+    // 온체인 팬 프로파일링
+    walletAddress: text("wallet_address"),        // 팬레터 본문에서 추출한 지갑 주소
+    fanTier: text("fan_tier"),                    // 'vip' | 'regular' | null
+
     // 타임스탬프
     receivedAt: text("received_at"),              // 이메일 수신 시간 (ISO String)
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -47,6 +51,12 @@ export const replies = sqliteTable("replies", {
     // 이메일 발송 상태
     emailSent: integer("email_sent", { mode: "boolean" }).default(false),
     emailSentAt: text("email_sent_at"),
+
+    // NFT 민팅 결과
+    nftTokenId: text("nft_token_id"),
+    nftTxHash: text("nft_tx_hash"),
+    nftClaimUrl: text("nft_claim_url"),
+    nftTier: text("nft_tier"),
 
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 }, (table) => ({

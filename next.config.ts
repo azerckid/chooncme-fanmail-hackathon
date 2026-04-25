@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
     '@coinbase/coinbase-sdk',
     'viem',
   ],
+  transpilePackages: [
+    '@virtuals-protocol/acp-node-v2',
+  ],
 };
 
 export default nextConfig;

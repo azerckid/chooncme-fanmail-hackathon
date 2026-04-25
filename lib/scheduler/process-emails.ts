@@ -4,7 +4,7 @@
  */
 
 import { db } from '@/db';
-import { fanLetters } from '@/db/schema';
+import { fanLetters, replies } from '@/db/schema';
 import {
   createGmailClientFromEnv,
   fetchRecentEmails,
@@ -19,6 +19,8 @@ import {
   isDryRunMode,
 } from './index';
 import { mintReplyNFT } from '@/lib/blockchain/nft';
+import { getFanProfile, type FanTier } from '@/lib/blockchain/nansen';
+import { extractWalletAddress } from '@/lib/email/parse-wallet';
 import { processWithGame, isGameEnabled } from '@/lib/agents/orchestrator';
 import { eq } from 'drizzle-orm';
 
@@ -208,7 +210,24 @@ async function processFanLetter(
     return;
   }
 
-  // 3-2. 답장 생성 (GAME Orchestrator 우선, 폴백 시 기존 파이프라인)
+  // 3-2. 지갑 주소 파싱 + 온체인 팬 프로파일 조회
+  let fanTier: FanTier | undefined;
+  const walletAddress = extractWalletAddress(email.bodyPlain ?? '');
+  if (walletAddress) {
+    log(`  Wallet found: ${walletAddress}`);
+    try {
+      const profile = await getFanProfile(walletAddress);
+      fanTier = profile.tier;
+      log(`  Fan tier: ${fanTier} (hasSentToAgent=${profile.hasSentToAgent})`);
+      await db.update(fanLetters)
+        .set({ walletAddress, fanTier })
+        .where(eq(fanLetters.id, letterId));
+    } catch (err) {
+      console.error('[ProcessEmails] Nansen lookup failed (continuing):', err);
+    }
+  }
+
+  // 3-3. 답장 생성 (GAME Orchestrator 우선, 폴백 시 기존 파이프라인)
   if (replyDelayMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, replyDelayMs));
   }
@@ -231,7 +250,7 @@ async function processFanLetter(
     }
   } else {
     // 기존 파이프라인 폴백
-    const replyResult = await generateReplyFromEmail(email);
+    const replyResult = await generateReplyFromEmail(email, fanTier);
 
     if (!replyResult.success || !replyResult.reply) {
       result.errorCount++;
@@ -250,9 +269,20 @@ async function processFanLetter(
         const mintResult = await mintReplyNFT({
           replyContent: replyBody,
           receivedAt: new Date().toISOString(),
+          fanTier,
         });
         log(`  NFT minted: tier=${mintResult.tier}, claimUrl=${mintResult.claimUrl}`);
         replyBody += buildNftSection(replyBody, mintResult.claimUrl);
+
+        // NFT 결과를 replies 테이블에 저장
+        await db.update(replies)
+          .set({
+            nftTokenId: mintResult.tokenId,
+            nftTxHash: mintResult.txHash,
+            nftClaimUrl: mintResult.claimUrl,
+            nftTier: mintResult.tier,
+          })
+          .where(eq(replies.letterId, letterId));
       } catch (nftError) {
         console.error('[ProcessEmails] NFT mint failed (continuing without NFT):', nftError);
       }

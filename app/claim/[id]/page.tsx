@@ -2,9 +2,15 @@ import Link from 'next/link';
 import { createPublicClient, http, parseAbi } from 'viem';
 import { baseSepolia, base } from 'viem/chains';
 
-async function getNftImage(tokenId: string): Promise<string | null> {
+interface NftMeta {
+  image: string | null;
+  tier: string | null;
+  name: string | null;
+}
+
+async function getNftMeta(tokenId: string): Promise<NftMeta> {
   const contractAddress = process.env.NFT_CONTRACT_ADDRESS;
-  if (!contractAddress || tokenId.startsWith('0x')) return null;
+  if (!contractAddress || tokenId.startsWith('0x')) return { image: null, tier: null, name: null };
 
   try {
     const network = process.env.BASE_NETWORK ?? 'base-sepolia';
@@ -22,12 +28,13 @@ async function getNftImage(tokenId: string): Promise<string | null> {
 
     if (tokenURI.startsWith('data:application/json;base64,')) {
       const json = JSON.parse(Buffer.from(tokenURI.split(',')[1], 'base64').toString());
-      return json.image ?? null;
+      const tier = json.attributes?.find((a: { trait_type: string; value: string }) => a.trait_type === 'tier')?.value ?? null;
+      return { image: json.image ?? null, tier, name: json.name ?? null };
     }
   } catch {
-    return null;
+    return { image: null, tier: null, name: null };
   }
-  return null;
+  return { image: null, tier: null, name: null };
 }
 
 export default async function ClaimPage({
@@ -36,7 +43,7 @@ export default async function ClaimPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const nftImage = await getNftImage(id);
+  const { image: nftImage, tier, name: nftName } = await getNftMeta(id);
   const network = process.env.BASE_NETWORK ?? 'base-sepolia';
   const isMainnet = network === 'base-mainnet';
   const explorerBase = isMainnet
@@ -119,7 +126,7 @@ export default async function ClaimPage({
             letterSpacing: '-0.5px',
           }}
         >
-          춘심이의 답장
+          {nftName ?? '춘심이의 답장'}
         </h1>
         <p
           style={{
@@ -153,10 +160,22 @@ export default async function ClaimPage({
               {isMainnet ? 'Base Mainnet' : 'Base Sepolia'}
             </span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
             <span style={{ fontSize: '13px', color: '#5b616e' }}>Collection</span>
             <span style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>Chooncme Reply (CPLY)</span>
           </div>
+          {tier && (
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '13px', color: '#5b616e' }}>Tier</span>
+              <span style={{
+                fontSize: '13px',
+                fontWeight: 700,
+                color: tier === 'golden' ? '#FFD700' : tier === 'comfort' ? '#a78bfa' : '#94a3b8',
+              }}>
+                {tier === 'golden' ? 'Golden' : tier === 'comfort' ? 'Comfort' : 'Standard'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Explorer 버튼 */}

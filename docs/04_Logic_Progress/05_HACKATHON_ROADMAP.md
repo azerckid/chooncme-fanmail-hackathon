@@ -9,19 +9,19 @@
 
 | Phase | 상태 | 비고 |
 |:---|:---:|:---|
-| Phase 0 — 사전 준비 | 🟡 진행중 | 패키지 설치 완료. API Key/컨트랙트 배포 대기 |
-| Phase 1 — Flock.io LLM | ✅ 코드 완료 | API Key 수령 후 동작 검증 필요 |
-| Phase 2 — AgentKit + NFT | ✅ 코드 완료 | API Key + 컨트랙트 배포 후 검증 필요 |
-| Phase 3 — x402 결제 | ✅ 코드 완료 | Flock.io x402 지원 여부 당일 확인 |
-| Phase 4-A — 데모 모드 | ✅ 완료 | DEMO_MODE + /api/demo/trigger 구현 |
-| Phase 4-B — 발표 자료 | ✅ 완료 | README + HTML 피치덱 생성 완료 |
-| Phase 4 — 최종 제출 | 🔲 대기 | API Key 수령 후 진행 |
+| Phase 0 — 사전 준비 | ✅ 완료 | API Key, 컨트랙트, 환경변수 전체 설정 완료 |
+| Phase 1 — Flock.io LLM | ✅ 동작 검증 완료 | E2E 파이프라인 Flock.io LLM으로 답장 생성 확인 |
+| Phase 2 — AgentKit + NFT | ✅ 동작 검증 완료 | NFT 민팅 (tokenId=16,18 등) Base Sepolia 확인 |
+| Phase 3 — x402 결제 | ✅ 코드 완료 | Flock.io x402 미지원으로 코드만 유지 |
+| Phase 4-A — 데모 모드 | ✅ 동작 검증 완료 | /api/demo/trigger 30초 내 E2E 완료 확인 |
+| Phase 4-B — 발표 자료 | ✅ 완료 | README + HTML 피치덱 + 아키텍처 그래프 완료 |
+| Phase 4 — 최종 제출 | 🔲 대기 | GitHub public 전환 + 제출 필요 |
 | Phase 5 — 대시보드 버그 | ✅ 완료 | Critical 항목 전체 수정 완료 |
-| Phase 6 — Coinbase 디자인 | ✅ 완료 | globals.css / sidebar / header / charts 적용 |
-| Phase 7 — Virtuals GAME | ✅ 코드 완료 | GAME_API_KEY 수령 후 검증 필요 |
-| Phase 8 — Virtuals ACP | ✅ 코드 완료 | ACP_ENABLED=true + 에이전트 주소 설정 필요 |
+| Phase 6 — Coinbase 디자인 | ✅ 완료 | globals.css / sidebar / header / charts / ClaimPage 적용 |
+| Phase 7 — Virtuals GAME | ✅ 연동 완료 | GAME 503 시 기존 파이프라인 폴백 정상 동작 |
+| Phase 8 — Virtuals ACP | ✅ 온체인 검증 완료 | 에이전트 등록/Offering 생성/Job 온체인 생성 확인 |
 | Phase 9 — 미구현 항목 수정 | ✅ 완료 | GAME연결/계약파일/ClaimPage/ACP키/Persona |
-| Phase 10 — Nansen 팬 지갑 프로파일링 | 🔲 대기 | 행사 당일 API 검증 후 방향 A/B/C 결정 |
+| Phase 10 — Nansen 팬 지갑 프로파일링 | ✅ 동작 검증 완료 | 방향 A+B+C 구현 및 VIP Golden NFT E2E 확인 |
 
 ---
 
@@ -455,15 +455,15 @@ Phase 0 (계정·컨트랙트·환경) → Phase 1 (Flock LLM) → Phase 2 (NFT 
 
 | Phase | 완료 기준 | 상태 | 폴백 |
 |:---|:---|:---:|:---|
-| Phase 0 | 모든 API Key 발급 + 컨트랙트 + owner 확인 | 🟡 진행중 | 당일 오전 불가 시 출전 포기 |
-| Phase 1 | Flock.io LLM으로 답장 생성 성공 | ✅ 코드완료 | API Key 수령 후 테스트 |
-| Phase 2 | NFT 민팅 + 클레임 링크 이메일 수신 성공 | ✅ 코드완료 | 컨트랙트 배포 후 테스트 |
-| Phase 3 | x402 결제 트랜잭션 온체인 확인 | ✅ 코드완료 | 조건부 — Flock.io 지원 시 활성화 |
-| Phase 4-A | DEMO_MODE 30초 내 답장 수신 확인 | ✅ 코드완료 | **스킵 불가 — 시연 불가능** |
-| Phase 4-B | 피치덱 + 다이어그램 완료 | ✅ 완료 | 녹화 영상만 미완 |
+| Phase 0 | 모든 API Key 발급 + 컨트랙트 + owner 확인 | ✅ 완료 | — |
+| Phase 1 | Flock.io LLM으로 답장 생성 성공 | ✅ 동작 검증 완료 | — |
+| Phase 2 | NFT 민팅 + 클레임 링크 이메일 수신 성공 | ✅ 동작 검증 완료 | — |
+| Phase 3 | x402 결제 트랜잭션 온체인 확인 | ✅ 코드완료 | Flock.io 미지원으로 코드 유지 |
+| Phase 4-A | DEMO_MODE 30초 내 답장 수신 확인 | ✅ 동작 검증 완료 | — |
+| Phase 4-B | 피치덱 + 다이어그램 완료 | ✅ 완료 | 녹화 영상 미완 |
 | Phase 4 | 데모 리허설 완료 + GitHub 제출 | 🔲 대기 | 당일 16:00~17:00 |
 | Phase 5 | 대시보드 Critical 버그 수정 완료 | ✅ 완료 | — |
-| Phase 6 | Coinbase 디자인 적용 + 빌드 통과 | ✅ 완료 | Claim Page 미완 |
+| Phase 6 | Coinbase 디자인 적용 + 빌드 통과 | ✅ 완료 | — |
 
 ---
 
@@ -573,9 +573,9 @@ ACP_NFT_PROVIDER_ADDRESS=        # NFTWorker 에이전트 온체인 주소
 
 ### 8-5. 동작 검증
 
-- [ ] ACP Job 생성 트랜잭션 Base Sepolia에서 확인
-- [ ] USDC 에스크로 및 릴리즈 흐름 확인
-- [ ] GAME 파이프라인과 연동 동작 확인
+- [x] ACP Job 생성 트랜잭션 Base 메인넷에서 확인 (jobId=1777, 1778 등 온체인 생성)
+- [ ] USDC 에스크로 및 릴리즈 흐름 확인 (오케스트레이터 USDC 잔액 필요 — 선택사항)
+- [x] GAME 파이프라인과 연동 동작 확인 (GAME 503 시 기존 파이프라인 폴백 동작)
 
 ---
 
@@ -643,44 +643,44 @@ ACP_NFT_PROVIDER_ADDRESS=        # NFTWorker 에이전트 온체인 주소
 
 > 결과를 [검증 문서](../05_QA_Validation/03_Nansen_API_검증_및_구현결정.md) 기록란에 작성 후 방향 결정.
 
-- [ ] Check 1 — 에이전트 지갑으로의 송금 이력 조회 API 존재 여부 확인
-- [ ] Check 2 — 포트폴리오/트랜잭션 데이터 응답 속도 확인 (3초 이내)
-- [ ] Check 3 — Base Sepolia 지원 여부 확인
-- [ ] 방향 A/B/C 결정 후 `.env.local`에 `NANSEN_API_KEY` 추가
+- [x] Check 1 — 에이전트 지갑으로의 송금 이력 조회 API 존재 여부 확인 (POST /profiler/address/transactions 정상)
+- [x] Check 2 — 포트폴리오/트랜잭션 데이터 응답 속도 확인 (3초 이내 ✓)
+- [x] Check 3 — Base Sepolia 미지원 확인 → Base 메인넷만 사용
+- [x] 방향 A+B+C 혼합 구현 완료, NANSEN_API_KEY 설정 완료
 
 ### 10-2. 데모 사전 준비 (해킹 시작 전 필수)
 
 - [ ] 테스트 팬 지갑에서 AgentKit 지갑(`0x363ad1c57C5cf94Ff4C0728Ca187bE4afB1Ee8B5`)으로
-      Base Sepolia ETH 소액 송금 (심사 중 "이 팬은 후원 이력 있음" 라이브 시연용)
-- [ ] 해당 지갑 주소 포함 팬메일 초안 준비
+      Base 메인넷 ETH 소액 송금 (Nansen 방향 A 라이브 시연용 — 선택사항)
+- [x] VIP 지갑 주소 포함 팬메일 초안 준비 (js7122420@gmail.com 지갑 주소 포함)
 
 ### 10-3. 구현 — `lib/blockchain/nansen.ts` 신규 생성
 
-- [ ] `getFanProfile(fanWalletAddress)` 함수 구현
+- [x] `getFanProfile(fanWalletAddress)` 함수 구현
   - 방향 A: Nansen 트랜잭션 API로 에이전트 지갑 수신 이력 직접 조회
-  - 방향 B: Nansen 포트폴리오 데이터 + 임계값 기반 자체 분류
-  - 방향 C: Base 퍼블릭 RPC로 에이전트 지갑 수신 트랜잭션 직접 조회 (Nansen 폴백)
-- [ ] 반환값: `{ tier: 'vip' | 'regular', hasSentToAgent: boolean }`
+  - 방향 B: Nansen 레이블 API (Smart Money, High Activity, Token Billionaire 등)
+  - 방향 C: Base 퍼블릭 RPC 잔액 기반 폴백
+- [x] 반환값: `{ tier: 'vip' | 'regular', hasSentToAgent: boolean }`
 
 ### 10-4. 구현 — `lib/email/classify.ts` 수정
 
-- [ ] 팬메일 본문에서 지갑 주소 파싱 (`0x[a-fA-F0-9]{40}` 정규식)
-- [ ] 지갑 주소 없는 경우 `regular` 티어로 자동 폴백
+- [x] 팬메일 본문에서 지갑 주소 파싱 (`0x[a-fA-F0-9]{40}` 정규식)
+- [x] 지갑 주소 없는 경우 `regular` 티어로 자동 폴백
 
 ### 10-5. 구현 — `lib/llm/reply-prompt.ts` 수정
 
-- [ ] `tier === 'vip'` 시 특별 프롬프트 주입 (후원 감사 + 더 길고 감동적인 답장)
+- [x] `tier === 'vip'` 시 특별 프롬프트 주입 (후원 감사 + 더 길고 감동적인 답장)
 
 ### 10-6. 구현 — `lib/blockchain/nft.ts` 수정
 
-- [ ] `resolveFinalTier(emotionTier, fanTier)` 함수 추가
+- [x] `resolveFinalTier(emotionTier, fanTier)` 함수 추가
   - `fanTier === 'vip'`이면 감정 분석 결과와 무관하게 `golden` 오버라이드
 
 ### 10-7. 동작 검증
 
-- [ ] VIP 지갑 주소 포함 팬메일 → Golden NFT 민팅 + VIP 답장 확인
-- [ ] 일반 지갑 주소 포함 팬메일 → 기존 감정 기반 NFT 티어 정상 동작 확인
-- [ ] 지갑 주소 없는 팬메일 → 기존 파이프라인 정상 폴백 확인
+- [x] VIP 지갑 주소 포함 팬메일 → Golden NFT 민팅 + VIP 답장 확인 (tokenId=16, tier=golden)
+- [x] 일반 지갑 주소 포함 팬메일 → 기존 감정 기반 NFT 티어 정상 동작 확인 (tokenId=18, tier=standard)
+- [x] 지갑 주소 없는 팬메일 → 기존 파이프라인 정상 폴백 확인
 
 ---
 

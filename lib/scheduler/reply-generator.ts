@@ -8,6 +8,7 @@ import {
   createGeminiClientForTask,
   withRetry,
   REPLY_SYSTEM_PROMPT,
+  getReplySystemPrompt,
   buildReplyUserPrompt,
   buildPlanPrompt,
   buildWriteUserPrompt,
@@ -16,6 +17,7 @@ import {
   PLAN_SYSTEM_PROMPT,
   type GeneratedReply,
 } from '@/lib/llm';
+import type { FanTier } from '@/lib/blockchain/nansen';
 import { EmailMessage } from '@/lib/email';
 import { db } from '@/db';
 import { fanLetters } from '@/db/schema';
@@ -37,6 +39,8 @@ export interface GenerateReplyInput {
   letterSubject: string;
   /** 팬레터 본문 */
   letterContent: string;
+  /** 온체인 팬 티어 (VIP면 특별 프롬프트 주입) */
+  fanTier?: FanTier;
 }
 
 /**
@@ -52,6 +56,7 @@ export interface GenerateReplyResult {
  * LLM을 사용하여 답장 생성
  */
 export async function generateReply(input: GenerateReplyInput): Promise<GenerateReplyResult> {
+  const systemPrompt = getReplySystemPrompt(input.fanTier);
   const userPrompt = buildReplyUserPrompt({
     fanName: input.fanName,
     letterSubject: input.letterSubject,
@@ -60,7 +65,7 @@ export async function generateReply(input: GenerateReplyInput): Promise<Generate
 
   try {
     const llm = createReplyClient();
-    const response = await withRetry(() => llm.chat(REPLY_SYSTEM_PROMPT, userPrompt));
+    const response = await withRetry(() => llm.chat(systemPrompt, userPrompt));
     return { success: true, reply: parseReplyResponse(response.content) };
   } catch (primaryError) {
     const gemini = createGeminiClientForTask('reply');
@@ -70,7 +75,7 @@ export async function generateReply(input: GenerateReplyInput): Promise<Generate
     }
     console.warn('[ReplyGenerator] Primary LLM refused/failed, falling back to Gemini');
     try {
-      const response = await withRetry(() => gemini.chat(REPLY_SYSTEM_PROMPT, userPrompt));
+      const response = await withRetry(() => gemini.chat(systemPrompt, userPrompt));
       return { success: true, reply: parseReplyResponse(response.content) };
     } catch (error) {
       console.error('[ReplyGenerator] Failed to generate reply:', error);
@@ -88,6 +93,8 @@ export async function generateReplyTwoStep(input: GenerateReplyInput): Promise<G
     letterSubject: input.letterSubject,
     letterContent: input.letterContent,
   };
+
+  const systemPrompt = getReplySystemPrompt(input.fanTier);
 
   async function runTwoStep(llm: ReturnType<typeof createReplyClient>) {
     const planPrompt = buildPlanPrompt(base);
@@ -112,7 +119,7 @@ export async function generateReplyTwoStep(input: GenerateReplyInput): Promise<G
       }))?.id || 0));
 
     const writePrompt = buildWriteUserPrompt({ ...base, plan });
-    const writeResponse = await withRetry(() => llm.chat(REPLY_SYSTEM_PROMPT, writePrompt));
+    const writeResponse = await withRetry(() => llm.chat(systemPrompt, writePrompt));
     return parseReplyResponse(writeResponse.content);
   }
 
@@ -139,12 +146,13 @@ export async function generateReplyTwoStep(input: GenerateReplyInput): Promise<G
  * 이메일 메시지에서 답장 생성 (편의 함수)
  * USE_TWO_STEP_REPLY=true 이면 2단계 흐름 사용
  */
-export async function generateReplyFromEmail(email: EmailMessage): Promise<GenerateReplyResult> {
+export async function generateReplyFromEmail(email: EmailMessage, fanTier?: FanTier): Promise<GenerateReplyResult> {
   const input = {
     fanName: email.fromName,
     fanEmail: email.fromEmail,
     letterSubject: email.subject,
     letterContent: email.bodyPlain,
+    fanTier,
   };
   return USE_TWO_STEP_REPLY ? generateReplyTwoStep(input) : generateReply(input);
 }

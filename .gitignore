@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# ACP CLI keychain 인증 토큰 (환경별)
+acp-cli/.env

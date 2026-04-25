@@ -1,161 +1,157 @@
 /**
- * Virtuals ACP (Agent Commerce Protocol) 브릿지
+ * Virtuals ACP (Agent Commerce Protocol) 브릿지 — v2 SDK
  *
  * 역할:
- * - Orchestrator = ACP Client (서비스 구매자)
- * - 각 Worker    = ACP Provider (서비스 판매자)
+ * - Provider: ACP Job을 수신하여 서비스 실행 (generate_fan_reply, mint_reply_nft)
+ * - Buyer: 외부 Provider에게 Job 생성 (선택적)
  *
- * 흐름:
- * 1. Orchestrator → ACP Job 생성 (on-chain) + USDC 에스크로
- * 2. Provider(Worker)가 Job 수락 → 서비스 실행
- * 3. 완료 시 USDC 릴리즈
- *
- * 환경변수:
- * ACP_ENABLED=true
- * AGENT_WALLET_PRIVATE_KEY=   (AgentKit 지갑 private key)
- * ACP_REPLY_PROVIDER_ADDRESS= (ReplyWorker 에이전트 주소)
- * ACP_NFT_PROVIDER_ADDRESS=   (NFTWorker 에이전트 주소)
+ * 전제조건:
+ * - acp-cli configure 완료 (OS keychain에 Privy 토큰 저장)
+ * - acp-cli agent create 완료 (acp-cli/config.json에 스마트 컨트랙트 지갑 정보)
+ * - acp-cli agent register-erc8004 완료 (Base Sepolia 온체인 등록)
  */
 
-import AcpClient from '@virtuals-protocol/acp-node';
-import {
-  AcpContractClientV2,
-  AcpJobPhases,
-  baseSepoliaAcpX402ConfigV2,
-  ethFare,
-  FareAmount,
-} from '@virtuals-protocol/acp-node';
+import type { AcpAgent } from '@virtuals-protocol/acp-node-v2';
+import { handleJob } from './acpProvider';
+import { createAcpAgent } from './acpAgentFactory';
 
 export function isAcpEnabled(): boolean {
-  return (
-    process.env.ACP_ENABLED === 'true' &&
-    !!process.env.ACP_WALLET_PRIVATE_KEY  // AgentKit의 CDP 키와 별도 관리
-  );
+  return process.env.ACP_ENABLED === 'true';
 }
 
-let acpClient: AcpClient | null = null;
+let acpAgent: AcpAgent | null = null;
+let startPromise: Promise<AcpAgent> | null = null;
 
-export async function getAcpClient(): Promise<AcpClient> {
-  if (acpClient) return acpClient;
+export async function getAcpAgent(): Promise<AcpAgent> {
+  if (acpAgent) return acpAgent;
 
-  // ACP는 AgentKit(CDP OAuth)과 독립적인 raw private key 방식 사용
-  // AgentKit: CDP_API_KEY_ID + CDP_API_KEY_SECRET
-  // ACP:      ACP_WALLET_PRIVATE_KEY (동일 또는 별도 지갑 가능)
-  const privateKey = process.env.ACP_WALLET_PRIVATE_KEY as `0x${string}`;
-  const agentAddress = process.env.AGENT_WALLET_ADDRESS as `0x${string}`;
+  // 동시 호출 시 하나의 초기화만 실행
+  if (!startPromise) {
+    startPromise = (async () => {
+      const agent = await createAcpAgent();
 
-  if (!privateKey || !agentAddress) {
-    throw new Error('ACP_WALLET_PRIVATE_KEY and AGENT_WALLET_ADDRESS are required for ACP');
+      // Provider: 들어오는 ACP Job 처리
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      agent.on('entry', async (session: any, entry: any) => {
+        const jobId: string = String(session?.jobId ?? entry?.onChainJobId ?? 'unknown');
+        const eventType: string = entry?.kind === 'system' ? (entry?.event?.type ?? '') : 'message';
+
+        console.log(`[ACP] Entry received: jobId=${jobId}, event=${eventType}`);
+
+        // Provider only submits deliverable when job is funded
+        if (eventType !== 'job.funded') return;
+
+        try {
+          const job = session.job;
+          let requirement: Record<string, unknown> = {};
+          if (job?.description) {
+            try {
+              requirement = typeof job.description === 'string'
+                ? JSON.parse(job.description)
+                : job.description;
+            } catch {
+              requirement = { raw: job.description };
+            }
+          }
+
+          const serviceName: string = (requirement.serviceName as string) ?? (requirement.service_name as string) ?? '';
+          const jobLike = { serviceName, serviceRequirement: requirement, memo: '' };
+
+          const result = await handleJob(jobLike);
+          const deliverable = JSON.stringify(result);
+
+          await session.submit(deliverable);
+          console.log(`[ACP] Job submitted: jobId=${jobId}`);
+        } catch (e) {
+          console.error(`[ACP] Job handling failed: jobId=${jobId}`, e);
+        }
+      });
+
+      await agent.start(() => {
+        console.log(`[ACP] Agent started, listening for jobs (wallet: ${process.env.AGENT_WALLET_ADDRESS})`);
+      });
+
+      acpAgent = agent;
+      return agent;
+    })();
   }
 
-  // AcpContractClientV2: Base Sepolia + x402 결제 설정
-  const contractClient = await AcpContractClientV2.build(
-    privateKey,
-    1, // sessionEntityKeyId
-    agentAddress,
-    baseSepoliaAcpX402ConfigV2,
-  );
-
-  acpClient = new AcpClient({
-    acpContractClient: contractClient,
-    skipSocketConnection: true, // 소켓 없이 온체인 직접 호출
-
-    onNewTask: async (job: any, memo?: any) => {
-      console.log(`[ACP] New job received: jobId=${job.id}, from=${job.clientAddress}`);
-    },
-
-    onEvaluate: async (job: any) => {
-      console.log(`[ACP] Job evaluated: jobId=${job.id}, phase=${job.phase}`);
-    },
-  });
-
-  await acpClient.init(true); // skipSocketConnection=true
-  console.log('[ACP] Client initialized');
-
-  return acpClient;
+  return startPromise;
 }
 
 /**
- * ACP Job 생성 — Orchestrator가 Provider Worker에게 서비스 의뢰
- *
- * @param providerAddress Worker의 온체인 주소
- * @param serviceName      서비스 이름 (로깅용)
- * @param requirement      서비스 요구사항 (JSON)
- * @param fareUsdc         USDC 요금 (기본 0.001 USDC — 테스트넷)
+ * ACP Provider로서 초기화 — cron 또는 서버 시작 시 호출
+ */
+export async function initAcpProvider(): Promise<void> {
+  if (!isAcpEnabled()) {
+    console.log('[ACP] Disabled (ACP_ENABLED != true)');
+    return;
+  }
+  try {
+    await getAcpAgent();
+  } catch (e) {
+    console.error('[ACP] Provider init failed:', e);
+    throw e;
+  }
+}
+
+/**
+ * ACP Buyer로서 Job 생성 — 외부 Provider에게 서비스 의뢰
+ * (acp-node-v2의 AcpAgent 내부 client를 통해 온체인 Job 생성)
  */
 export async function initiateAcpJob(
   providerAddress: `0x${string}`,
   serviceName: string,
   requirement: Record<string, unknown>,
-  fareUsdc = 0.001,
-): Promise<number | null> {
+): Promise<string | null> {
   if (!isAcpEnabled()) return null;
 
   try {
-    const client = await getAcpClient();
+    const agent = await getAcpAgent();
+    const chainId = process.env.IS_TESTNET === 'true' ? 84532 : 8453;
 
-    const expiredAt = new Date(Date.now() + 10 * 60 * 1000); // 10분 후 만료
-
-    // FareAmount: fareUsdc * 1e6 = base unit (number 타입)
-    const fareBaseUnit = Math.round(fareUsdc * 1_000_000);
-    const fare = new FareAmount(fareBaseUnit, ethFare);
-
-    const jobId = await client.initiateJob(
-      providerAddress,
-      JSON.stringify(requirement),
-      fare,
-      undefined,  // evaluator (옵션)
-      expiredAt,
+    const result = await agent.createJobByOfferingName(
+      chainId,
       serviceName,
+      providerAddress,
+      requirement,
     );
 
-    console.log(`[ACP] Job initiated: service=${serviceName}, jobId=${jobId}, fare=${fareUsdc} USDC`);
-    return jobId;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const jobId = (result as any)?.jobId ?? (result as any)?.id ?? String(result ?? '');
+    console.log(`[ACP] Job initiated: service=${serviceName}, jobId=${jobId}`);
+    return String(jobId);
   } catch (e) {
-    console.warn(`[ACP] Job initiation failed for ${serviceName}, continuing without ACP:`, e);
+    console.warn(`[ACP] Job initiation failed for ${serviceName}:`, e);
     return null;
   }
 }
 
 /**
- * ACP 멀티 에이전트 파이프라인:
- * 1. ReplyWorker에게 Job 생성 → 답장 의뢰 (USDC 지불)
- * 2. NFTWorker에게 Job 생성  → NFT 민팅 의뢰 (USDC 지불)
+ * 팬메일 처리 ACP 파이프라인
  */
 export async function runAcpPipeline(params: {
   fanEmail: string;
   fanName: string;
   subject: string;
   content: string;
-}): Promise<{ replyJobId: number | null; nftJobId: number | null }> {
+}): Promise<{ replyJobId: string | null; nftJobId: string | null }> {
   const replyProviderAddress = process.env.ACP_REPLY_PROVIDER_ADDRESS as `0x${string}`;
   const nftProviderAddress = process.env.ACP_NFT_PROVIDER_ADDRESS as `0x${string}`;
 
-  // ReplyWorker에게 답장 생성 의뢰
   const replyJobId = replyProviderAddress
-    ? await initiateAcpJob(
-        replyProviderAddress,
-        'generate_fan_reply',
-        {
-          fan_name: params.fanName,
-          letter_subject: params.subject,
-          letter_content: params.content.slice(0, 500),
-        },
-        0.001,
-      )
+    ? await initiateAcpJob(replyProviderAddress, 'generate_fan_reply', {
+        fan_name: params.fanName,
+        letter_subject: params.subject,
+        letter_content: params.content.slice(0, 500),
+      })
     : null;
 
-  // NFTWorker에게 NFT 민팅 의뢰
   const nftJobId = nftProviderAddress
-    ? await initiateAcpJob(
-        nftProviderAddress,
-        'mint_reply_nft',
-        {
-          fan_email_hash: Buffer.from(params.fanEmail).toString('base64').slice(0, 16),
-          received_at: new Date().toISOString(),
-        },
-        0.001,
-      )
+    ? await initiateAcpJob(nftProviderAddress, 'mint_reply_nft', {
+        fan_email_hash: Buffer.from(params.fanEmail).toString('base64').slice(0, 16),
+        received_at: new Date().toISOString(),
+      })
     : null;
 
   return { replyJobId, nftJobId };
