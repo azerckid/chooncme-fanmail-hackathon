@@ -52,7 +52,7 @@ export default async function ClaimPage({
 
   const contractAddress = process.env.NFT_CONTRACT_ADDRESS ?? '';
   const explorerUrl = contractAddress
-    ? `${explorerBase}/token/${contractAddress}?a=${id}`
+    ? `${explorerBase}/nft/${contractAddress}/${id}`
     : `${explorerBase}`;
 
   // tokenId가 txHash 형식인지 확인 (0x로 시작)
