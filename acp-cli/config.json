@@ -1,0 +1,33 @@
+{
+  "ownerWallet": "0x458a23c4cb272dbfe8a61802469d4e5e789f28ba",
+  "activeWallet": "0xadd0e03389971897149436f875a9b29b4847e2ad",
+  "agents": {
+    "0xadd0e03389971897149436f875a9b29b4847e2ad": {
+      "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEUF1GZ0SmQVnMzEX9e0lQDtO1pQfPCZkcSdqtzhSmak3i1xknbe4heoSmliIyAQtNTGVxdIMKUtLGAWZDVj/c7Q==",
+      "id": "019dc01f-6976-71e3-835a-f12d67abf3a4",
+      "walletId": "sijvjqdmzayxckyj75p2uyjg",
+      "builderCode": "bc_i5kj00mp"
+    },
+    "0x446aaeab12d1df2c508c12f7d23db34d66732e0f": {
+      "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEnPhaHLQzVjCOQjma0HqZCGf6K4wJ61B20tGsuMogqiYVya2TZO2id76vm4OZ18YgG23DOvSzDrA8q4Z9ZYQ1nA==",
+      "walletId": "kmzr7u4i8y0trvbtm3l2mhfc",
+      "id": "019dc020-9429-7db9-8c0b-2549325134a1"
+    },
+    "0x1b2241c33cf7319475332dd6bddae7bf54c268bd": {
+      "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE1kDyHe+E9N4jrj3/aT+SgG+MxZJfneOGSQWq1cTbkoubs+GIwpQ5O/JZD3E3v4gzdvNOh9Indgw5XYtIj+VScQ==",
+      "id": "019dc289-f120-7685-9d10-59cfddca9a38",
+      "walletId": "sxmk6becykigfhvuyd73kgvw",
+      "builderCode": "bc_py7w05od"
+    },
+    "0xa271e22771b2445f260b2fe64f5a8b141dcc7d59": {
+      "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/391+zZ/7Fwe3YBwc59Nbr7n9Cqx9fk5eXjnvoBsCEUyJ64mtPP724FYz2s0Y4O0Lletr7PE8Ve+AJCdmXHtjg==",
+      "id": "019dc28c-a8ac-7be7-9c97-327f4c64c237",
+      "walletId": "dq81ttd8pm6swduce8v5pe1v",
+      "builderCode": "bc_7biy97ow"
+    },
+    "0xcf8c590de4422b33ec93c04d93bc3405bc9b4226": {
+      "publicKey": "",
+      "id": "019dc021-5cb7-75f5-91ce-4b2b56ee4a12"
+    }
+  }
+}

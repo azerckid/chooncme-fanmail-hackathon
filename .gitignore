@@ -47,5 +47,5 @@ next-env.d.ts
 # Claude Code worktrees
 .claude/worktrees/
 
-# ACP CLI 바이너리 (플랫폼별, 용량 큼 — 커밋 불필요)
-acp-cli/bin/
+# ACP CLI keychain 인증 토큰 (환경별)
+acp-cli/.env
