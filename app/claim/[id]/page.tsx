@@ -29,7 +29,11 @@ async function getNftMeta(tokenId: string): Promise<NftMeta> {
     if (tokenURI.startsWith('data:application/json;base64,')) {
       const json = JSON.parse(Buffer.from(tokenURI.split(',')[1], 'base64').toString());
       const tier = json.attributes?.find((a: { trait_type: string; value: string }) => a.trait_type === 'tier')?.value ?? null;
-      return { image: json.image ?? null, tier, name: json.name ?? null };
+      let imageUrl = json.image ?? null;
+      if (imageUrl && imageUrl.startsWith('ipfs://')) {
+        imageUrl = imageUrl.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+      }
+      return { image: imageUrl, tier, name: json.name ?? null };
     }
   } catch {
     return { image: null, tier: null, name: null };
