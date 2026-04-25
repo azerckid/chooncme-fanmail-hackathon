@@ -33,28 +33,43 @@
 
 ---
 
-### SLIDE 1 — Hook (30초)
+### SLIDE 1 — Hook (45초)
 
-> **"팬이라면 누구나 알고 있습니다.**
-> 좋아하는 크리에이터에게 편지를 보내지만, 답장을 받는 사람은 없습니다.
+> *(슬라이드가 뜨기 전, 또는 뜨는 순간 시작)*
 >
-> 33,000명의 팬덤, 단 한 명의 크리에이터.
-> 물리적으로 불가능한 문제입니다.
+> **"춘심이는 X(트위터)에서 활동하는 K-pop 트레이니입니다.**
+> 팔로워 33,000명. 매달 수백 통의 팬레터가 이메일로 옵니다.
+> 한 명이 전부 읽고 답하는 것은 물리적으로 불가능합니다.
 >
-> 저희는 AI 에이전트가 이 문제를 Base 위에서 해결하도록 만들었습니다.
+> *(잠깐 멈춤)*
+>
+> **"Choon-shim is a K-pop trainee with 33,000 followers on X.**
+> Every month, hundreds of fan letters arrive by email.
+> It is physically impossible for one person to read and reply to all of them.
+>
+> *(pause)*"
+>
+> ---
+>
+> **"후원한 팬은 압니다.**
+> 자신이 크리에이터에게 무언가를 줬다는 것을.
+> 하지만 크리에이터는 33,000명을 기억할 수 없습니다.
+>
+> 저희는 그 기억을 에이전트에게 맡겼습니다.
+> 온체인에 기록된 후원 이력, 에이전트는 절대 잊지 않습니다.
+> 그리고 Base 위에서 그 팬에게 다르게 답합니다.
 >
 > **지금 바로 참여해보세요. 발표가 진행되는 동안 답장이 도착할 것입니다.**
 > **이메일 주소: `choon.cme@gmail.com`**
 >
 > (심사위원과 청중들이 메일을 보낼 수 있도록 잠시 대기)"
 >
-> **"Every fan knows this.**
-> We send letters to our favorite creators, but no one gets a reply.
+> **"A fan who supported their creator knows what they gave.**
+> But a creator cannot remember 33,000 people.
 >
-> 33,000 fans, and only one creator.
-> It is impossible for one person to reply to everyone.
->
-> We built an AI agent on Base to solve this problem.
+> We gave that memory to an agent.
+> On-chain history never disappears, and the agent never forgets.
+> On Base, that fan gets a different reply.
 >
 > **Try it right now. You will get a reply during this talk.**
 > **Email: `choon.cme@gmail.com`**
