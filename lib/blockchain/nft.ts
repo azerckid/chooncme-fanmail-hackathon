@@ -42,7 +42,7 @@ const NFT_IMAGES = [
 
 function getRandomImageUrl(): string {
   const cid = NFT_IMAGES[Math.floor(Math.random() * NFT_IMAGES.length)];
-  return `https://gateway.pinata.cloud/ipfs/${cid}`;
+  return `ipfs://${cid}`;
 }
 
 function buildMetadata(params: {

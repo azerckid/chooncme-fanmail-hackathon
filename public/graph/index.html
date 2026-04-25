@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <title>Creator Agent Platform — Architecture Graph</title>
@@ -36,16 +36,16 @@
     </marker>
   </defs>
 
-  <!-- ─── GROUP: 입력 ─── -->
+  <!-- ─── GROUP: INPUT ─── -->
   <g class="group">
     <rect x="20" y="290" width="120" height="120" stroke="#5b616e" opacity="0.3"/>
     <text class="group-label" x="80" y="278" fill="#5b616e">INPUT</text>
   </g>
 
-  <!-- Node: 팬 이메일 -->
+  <!-- Node: Fan Email -->
   <g class="node" transform="translate(80,350)">
     <rect x="-50" y="-28" width="100" height="56" fill="#282b31" stroke="#5b616e" stroke-width="1"/>
-    <text y="-8">팬 이메일</text>
+    <text y="-8">Fan Email</text>
     <text class="sub" y="10">Gmail</text>
   </g>
 
@@ -81,10 +81,10 @@
     <text class="group-label" x="580" y="260" fill="#0667d0" text-anchor="middle">ReplyWorker</text>
   </g>
 
-  <!-- Node: Plan (감정분석) -->
+  <!-- Node: Plan (Sentiment Analysis) -->
   <g class="node" transform="translate(580,330)">
     <rect x="-80" y="-24" width="160" height="48" fill="#141518" stroke="#0667d0" stroke-width="1"/>
-    <text y="-6">감정 분석 (Plan)</text>
+    <text y="-6">Sentiment Analysis (Plan)</text>
     <text class="sub" y="12">emotional_tone</text>
   </g>
 
@@ -105,7 +105,7 @@
   <g class="node" transform="translate(580,520)">
     <rect x="-80" y="-24" width="160" height="48" fill="#141518" stroke="#22c55e" stroke-width="1"/>
     <text y="-6">getTierFromEmotion</text>
-    <text class="sub" y="12">+ VIP 오버라이드 → Golden</text>
+    <text class="sub" y="12">+ VIP Override → Golden</text>
   </g>
 
   <!-- Node: mint_reply_nft -->
@@ -115,7 +115,7 @@
     <text class="sub" y="12">AgentKit + viem</text>
   </g>
 
-  <!-- ─── GROUP: 외부 서비스 ─── -->
+  <!-- ─── GROUP: EXTERNAL SERVICES ─── -->
   <g class="group">
     <rect x="760" y="90" width="160" height="580" stroke="#5b616e" opacity="0.2"/>
     <text class="group-label" x="840" y="80" fill="#5b616e" text-anchor="middle">EXTERNAL</text>
@@ -132,7 +132,7 @@
   <g class="node" transform="translate(840,360)">
     <rect x="-60" y="-28" width="120" height="56" fill="#1a1200" stroke="#f59e0b" stroke-width="1.5"/>
     <text y="-8">Nansen</text>
-    <text class="sub" y="10">VIP 팬 조회</text>
+    <text class="sub" y="10">VIP Fan Lookup</text>
   </g>
 
   <!-- Node: Base Sepolia -->
@@ -146,7 +146,7 @@
   <g class="node" transform="translate(840,260)">
     <rect x="-60" y="-28" width="120" height="56" fill="#141518" stroke="#5b616e" stroke-width="1"/>
     <text y="-8">x402</text>
-    <text class="sub" y="10">USDC 자율 결제</text>
+    <text class="sub" y="10">USDC Auto-payment</text>
   </g>
 
   <!-- ─── OUTPUT ─── -->
@@ -155,25 +155,25 @@
     <text class="group-label" x="1020" y="258" fill="#5b616e" text-anchor="middle">OUTPUT</text>
   </g>
 
-  <!-- Node: 답장 이메일 -->
+  <!-- Node: Reply Email -->
   <g class="node" transform="translate(1020,320)">
     <rect x="-50" y="-24" width="100" height="48" fill="#282b31" stroke="#5b616e" stroke-width="1"/>
-    <text y="-6">답장 이메일</text>
-    <text class="sub" y="10">+ 클레임 링크</text>
+    <text y="-6">Reply Email</text>
+    <text class="sub" y="10">+ Claim Link</text>
   </g>
 
   <!-- Node: Reply NFT -->
   <g class="node" transform="translate(1020,400)">
     <rect x="-50" y="-24" width="100" height="48" fill="#0a1628" stroke="#0052ff" stroke-width="1"/>
     <text y="-6">Reply NFT</text>
-    <text class="sub" y="10">온체인 기록</text>
+    <text class="sub" y="10">On-chain Record</text>
   </g>
 
   <!-- ═══════════════════ EDGES ═══════════════════ -->
 
-  <!-- 팬 이메일 → GameAgent -->
+  <!-- Fan Email → GameAgent -->
   <path id="e-input" class="edge" d="M 130,350 L 260,350" stroke="#5b616e" marker-end="url(#arrow)"/>
-  <text class="edge-label" x="195" y="340">이메일</text>
+  <text class="edge-label" x="195" y="340">Email</text>
 
   <!-- GameAgent → ClassifierWorker -->
   <path id="e-classify" class="edge" d="M 390,318 Q 430,240 480,200 L 498,180" stroke="#578bfa" marker-end="url(#arrow-blue)"/>
@@ -189,69 +189,69 @@
 
   <!-- ClassifierWorker → Flock.io -->
   <path id="e-flock-classify" class="edge" d="M 660,165 Q 720,165 760,165 L 778,165" stroke="#578bfa" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
-  <text class="edge-label" x="720" y="157">LLM 분류</text>
+  <text class="edge-label" x="720" y="157">LLM Classification</text>
 
-  <!-- Plan (감정분석) → Flock.io -->
+  <!-- Plan (Sentiment Analysis) → Flock.io -->
   <path id="e-flock-plan" class="edge" d="M 660,330 Q 720,280 760,210 L 778,185" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
 
   <!-- generate_fan_reply → Flock.io -->
   <path id="e-flock-gen" class="edge" d="M 660,400 Q 730,340 760,220 L 778,190" stroke="#0667d0" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-  <text class="edge-label" x="700" y="280">LLM 생성</text>
+  <text class="edge-label" x="700" y="280">LLM Generation</text>
 
-  <!-- GameAgent → Nansen (VIP 팬 지갑 조회) -->
+  <!-- GameAgent → Nansen (VIP Fan Wallet Lookup) -->
   <path id="e-nansen" class="edge" d="M 420,325 Q 600,258 778,352" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/>
-  <text class="edge-label" x="580" y="270" fill="#f59e0b">VIP 팬 조회</text>
+  <text class="edge-label" x="580" y="270" fill="#f59e0b">VIP Lookup</text>
 
-  <!-- Nansen → NFTWorker (VIP 티어 오버라이드) -->
+  <!-- Nansen → NFTWorker (VIP Tier Override) -->
   <path id="e-nansen-tier" class="edge" d="M 778,375 Q 720,440 660,510" stroke="#f59e0b" stroke-dasharray="4,3" marker-end="url(#arrow-gold)"/>
-  <text class="edge-label" x="718" y="473" fill="#f59e0b">VIP 오버라이드</text>
+  <text class="edge-label" x="718" y="473" fill="#f59e0b">VIP Override</text>
 
-  <!-- Plan → generate (내부 흐름) -->
+  <!-- Plan → generate (Internal Flow) -->
   <path id="e-plan-gen" class="edge" d="M 580,354 L 580,374" stroke="#0667d0" marker-end="url(#arrow)"/>
   <text class="edge-label" x="620" y="367">emotional_tone</text>
 
-  <!-- getTierFromEmotion → mint_reply_nft (내부 흐름) -->
+  <!-- getTierFromEmotion → mint_reply_nft (Internal Flow) -->
   <path id="e-tier-mint" class="edge" d="M 580,544 L 580,554" stroke="#22c55e" marker-end="url(#arrow-green)"/>
   <text class="edge-label" x="630" y="552">tier</text>
 
   <!-- mint_reply_nft → Base Sepolia -->
   <path id="e-mint-base" class="edge" d="M 660,580 Q 720,535 760,470 L 778,465" stroke="#22c55e" marker-end="url(#arrow-green)"/>
-  <text class="edge-label" x="723" y="535">NFT 민팅</text>
+  <text class="edge-label" x="723" y="535">Mint NFT</text>
 
-  <!-- Flock.io → x402 (추론 비용 자율 결제) -->
+  <!-- Flock.io → x402 (Inference Cost Auto-payment) -->
   <path id="e-flock-x402" class="edge" d="M 900,170 L 942,170 L 942,260 L 902,260" stroke="#578bfa" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
-  <text class="edge-label" x="958" y="215">추론 비용</text>
+  <text class="edge-label" x="958" y="215">Inference Cost</text>
 
-  <!-- generate_fan_reply → 답장 이메일 -->
+  <!-- generate_fan_reply → Reply Email -->
   <path id="e-gen-email" class="edge" d="M 660,400 Q 760,420 870,418 Q 930,390 968,325" stroke="#5b616e" marker-end="url(#arrow)"/>
-  <text class="edge-label" x="760" y="438">이메일 발송</text>
+  <text class="edge-label" x="760" y="438">Send Email</text>
 
   <!-- Base Sepolia → Reply NFT -->
   <path id="e-base-nft" class="edge" d="M 900,460 Q 935,430 968,408" stroke="#0052ff" marker-end="url(#arrow-blue)"/>
-  <text class="edge-label" x="935" y="428">온체인</text>
+  <text class="edge-label" x="935" y="428">On-chain</text>
 
-  <!-- Reply NFT → 답장 이메일 (클레임 링크) -->
+  <!-- Reply NFT → Reply Email (Claim Link) -->
   <path id="e-nft-email" class="edge" d="M 1020,374 L 1020,344" stroke="#0052ff" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
-  <text class="edge-label" x="1058" y="361">클레임 URL</text>
+  <text class="edge-label" x="1058" y="361">Claim URL</text>
 
-  <!-- ═══ 범례 ═══ -->
+  <!-- ═══ Legend ═══ -->
   <g transform="translate(30, 560)">
-    <text font-size="12" fill="#5b616e" font-weight="700">범례</text>
+    <text font-size="12" fill="#5b616e" font-weight="700">Legend</text>
     <line x1="0" y1="20" x2="30" y2="20" stroke="#578bfa" stroke-width="1.5"/>
-    <text font-size="11" fill="#5b616e" x="35" y="24">GAME Worker 호출</text>
+    <text font-size="11" fill="#5b616e" x="35" y="24">GAME Worker Call</text>
     <line x1="0" y1="40" x2="30" y2="40" stroke="#22c55e" stroke-width="1.5"/>
-    <text font-size="11" fill="#5b616e" x="35" y="44">감정 → NFT 티어</text>
+    <text font-size="11" fill="#5b616e" x="35" y="44">Emotion → NFT Tier</text>
     <line x1="0" y1="60" x2="30" y2="60" stroke="#5b616e" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <text font-size="11" fill="#5b616e" x="35" y="64">외부 API 호출</text>
+    <text font-size="11" fill="#5b616e" x="35" y="64">External API Call</text>
     <line x1="0" y1="80" x2="30" y2="80" stroke="#0052ff" stroke-width="1.5"/>
-    <text font-size="11" fill="#5b616e" x="35" y="84">온체인 트랜잭션</text>
+    <text font-size="11" fill="#5b616e" x="35" y="84">On-chain Tx</text>
     <line x1="0" y1="100" x2="30" y2="100" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <text font-size="11" fill="#5b616e" x="35" y="104">Nansen VIP 조회</text>
+    <text font-size="11" fill="#5b616e" x="35" y="104">Nansen VIP Lookup</text>
   </g>
 </svg>
 <script>
-  // 순차 화살표 드로잉 애니메이션
-  // delay: 각 엣지가 나타나는 시점 (ms)
+  // Sequential arrow drawing animation
+  // delay: edge appearance time (ms)
   const SEQUENCE = [
     { id: 'e-input',          delay: 0    },
     { id: 'e-classify',       delay: 500  },
@@ -295,9 +295,9 @@
     });
   }
 
-  // 마지막 애니메이션 완료 후 재시작까지 대기 시간 (ms)
+  // Wait time before restarting after the last animation finishes (ms)
   const LOOP_PAUSE = 1200;
-  const TOTAL_ANIM = 3300 + 700; // 마지막 delay + 드로잉 duration
+  const TOTAL_ANIM = 3300 + 700; // last delay + drawing duration
   let loopTimer = null;
 
   function startAnimation() {
@@ -316,10 +316,10 @@
     loopTimer = null;
   }
 
-  // 페이지 로드 시 자동 실행
+  // Auto-run on page load
   window.addEventListener('load', startAnimation);
 
-  // 피치덱 iframe postMessage 수신
+  // Receive postMessage from pitch deck iframe
   window.addEventListener('message', (e) => {
     if (e.data === 'startAnimation') startAnimation();
     if (e.data === 'stopAnimation') stopAnimation();
