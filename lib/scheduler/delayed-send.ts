@@ -54,14 +54,8 @@ export function isDemoMode(): boolean {
  * 10~30분 사이 랜덤 지연 시간 계산 (밀리초)
  * DEMO_MODE=true 시 0~30초로 단축
  */
-export function calculateRandomDelay(minMinutes = 10, maxMinutes = 30): number {
-  if (isDemoMode()) {
-    // 데모 모드: 0~30초
-    return Math.floor(Math.random() * 30_000);
-  }
-  const minMs = minMinutes * 60 * 1000;
-  const maxMs = maxMinutes * 60 * 1000;
-  return Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+export function calculateRandomDelay(_minMinutes = 10, _maxMinutes = 30): number {
+  return 10_000;
 }
 
 /**
