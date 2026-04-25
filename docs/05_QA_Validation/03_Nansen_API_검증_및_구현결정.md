@@ -1,8 +1,8 @@
 # Nansen API 검증 및 구현 결정
 
 - Created: 2026-04-24
-- Updated: 2026-04-24
-- Status: 검증 대기 중
+- Updated: 2026-04-25
+- Status: 검증 완료 — 방향 A+B 혼합 구현
 
 ## 관련 문서
 
@@ -116,12 +116,29 @@ Nansen은 대시보드에서 "외부 분석 링크" 용도로만 표시.
 
 ---
 
-## 검증 결과 기록란
+## 검증 결과 기록란 (2026-04-25)
 
-> 검증 후 아래에 결과 기록
+- **Check 1 결과**: 레이블 API 정상 — `POST /profiler/address/labels` 응답 200, `High Activity`, `Token Billionaire` 등 레이블 반환 확인
+- **Check 2 결과**: 트랜잭션 API 정상 — `POST /profiler/address/transactions` 응답 200, `chain: 'base'` 지원 확인
+- **Check 3 결과**: Base Sepolia 미지원 — `chain: 'base_sepolia'` 422 오류. Base 메인넷(`chain: 'base'`)만 사용
+- **선택 방향**: 방향 A + B 혼합
+  - 방향 A (우선): 에이전트 지갑 수신 트랜잭션에서 팬 지갑 송금 이력 확인 → VIP
+  - 방향 B (폴백): 팬 지갑 레이블 조회 → `Token Billionaire`, `High Activity` 등 → VIP
+  - 방향 C (최종 폴백): Base RPC 잔액 기반 (Nansen 불가 시)
+- **구현 파일**: `lib/blockchain/nansen.ts`, `lib/email/parse-wallet.ts`
 
-- Check 1 결과:
-- Check 2 결과:
-- Check 3 결과:
-- 선택 방향:
-- 구현 시작 시각:
+### VIP 판별 흐름
+
+```
+팬메일 수신
+  → 본문에서 지갑 주소 추출 (0x... 정규식)
+  → Nansen 방향 A: 에이전트 지갑 수신 tx 조회 → 팬 지갑이 송금했으면 VIP
+  → (A 실패 시) 방향 B: 팬 지갑 레이블 조회 → Smart Money/Whale/Token Billionaire → VIP
+  → (B 실패 시) 방향 C: Base RPC 잔액 > 0.05 ETH → VIP
+  → VIP이면 → 골든 NFT 민팅 + VIP 전용 답장 생성
+```
+
+### 인증 방식
+
+- 헤더: `apikey: <NANSEN_API_KEY>` (소문자, Bearer 아님)
+- 트랜잭션 API 필수 파라미터: `address`, `chain`, `date: { from, to }`

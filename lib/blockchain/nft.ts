@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { parseAbi, encodeFunctionData } from 'viem';
 import { getWalletProvider, getAgentWalletAddress } from './agentkit';
+import type { FanTier } from './nansen';
 
 export type NftTier = 'golden' | 'comfort' | 'standard';
 
@@ -24,6 +25,12 @@ export function getTierFromEmotion(tone: EmotionalTone): NftTier {
   if (['love', 'support', 'joy', 'gratitude'].includes(tone)) return 'golden';
   if (['longing', 'sadness', 'concern'].includes(tone)) return 'comfort';
   return 'standard';
+}
+
+/** VIP 팬이면 감정 tone 무관하게 golden 오버라이드 */
+export function resolveFinalTier(emotionTier: NftTier, fanTier?: FanTier): NftTier {
+  if (fanTier === 'vip') return 'golden';
+  return emotionTier;
 }
 
 const NFT_IMAGES = [
@@ -78,12 +85,14 @@ export async function mintReplyNFT(params: {
   replyContent: string;
   receivedAt: string;
   emotionalTone?: EmotionalTone;
+  fanTier?: FanTier;
 }): Promise<MintResult> {
   const contractAddress = process.env.NFT_CONTRACT_ADDRESS;
   if (!contractAddress) throw new Error('NFT_CONTRACT_ADDRESS is not set');
 
   const network = process.env.BASE_NETWORK ?? 'base-sepolia';
-  const tier = getTierFromEmotion(params.emotionalTone ?? 'neutral');
+  const emotionTier = getTierFromEmotion(params.emotionalTone ?? 'neutral');
+  const tier = resolveFinalTier(emotionTier, params.fanTier);
   const metadata = buildMetadata({
     replyContent: params.replyContent,
     receivedAt: params.receivedAt,

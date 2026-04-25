@@ -38,15 +38,28 @@ function loadPersona(): Persona {
 
 const persona = loadPersona();
 
+export type FanTierForPrompt = 'vip' | 'regular';
+
 export interface ReplyPromptInput {
   fanName: string;
   letterSubject: string;
   letterContent: string;
+  fanTier?: FanTierForPrompt;
 }
 
 export interface GeneratedReply {
   subject: string;
   body: string;
+}
+
+const VIP_PREFIX = `이 팬은 직접 온체인 후원을 보내준 소중한 VIP 팬입니다. 평소보다 훨씬 길고 감동적인 답장을 써주세요. 후원에 대한 진심 어린 감사를 반드시 표현하고, 특별한 팬으로서의 애정을 듬뿍 담아주세요.\n\n`;
+
+/**
+ * 팬 티어에 따라 시스템 프롬프트 반환 (VIP면 후원 감사 prefix 주입)
+ */
+export function getReplySystemPrompt(fanTier?: FanTierForPrompt): string {
+  if (fanTier === 'vip') return VIP_PREFIX + REPLY_SYSTEM_PROMPT;
+  return REPLY_SYSTEM_PROMPT;
 }
 
 /**
@@ -80,7 +93,13 @@ export const REPLY_SYSTEM_PROMPT = `당신은 ${persona.role.ko} '${persona.name
 - 본문은 공백 제외 250자 이상 작성하세요.
 - 줄바꿈을 사용하고, 한 문장을 너무 길게 쓰지 마세요.
 - 답장 내용만 생성하세요. '알겠습니다' 같은 서론/결론은 절대 포함하지 마세요.
-- 팬레터 본문이 비어있거나 내용이 없는 경우에도 당황하지 말고, 팬의 이름과 메일을 보내준 것만으로도 감사하다는 마음을 담아 답장을 작성하세요.`;
+- 팬레터 본문이 비어있거나 내용이 없는 경우에도 당황하지 말고, 팬의 이름과 메일을 보내준 것만으로도 감사하다는 마음을 담아 답장을 작성하세요.
+
+# AI Safety 지침 (반드시 준수)
+- 정치적 발언, 종교적 주장, 특정 집단에 대한 혐오 표현을 절대 포함하지 마세요.
+- 크리에이터(춘심이)의 명예를 훼손하거나 부정적 이미지를 줄 수 있는 내용을 생성하지 마세요.
+- 팬의 개인정보(전화번호, 주소, 금융정보 등)를 유도하거나 노출하지 마세요.
+- 위험하거나 불법적인 행동을 권장하는 내용을 포함하지 마세요.`;
 
 /**
  * 1단계: 계획용 시스템 프롬프트 (Phase 2)
