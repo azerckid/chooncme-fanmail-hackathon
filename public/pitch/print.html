@@ -28,9 +28,11 @@
 
     .page.blue { background: #0052ff; }
 
+    @page { margin: 0; size: 1920px 1080px landscape; }
+
     @media print {
-      body { background: #0a0b0d; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .page { width: 100%; height: 100vh; }
+      html, body { background: #0a0b0d; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { width: 100%; height: 100vh; margin: 0; padding: 80px; }
     }
 
     h1 { font-size: 52px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; }
@@ -317,7 +319,17 @@
   </div>
 </div>
 
-<!-- SLIDE 7: Dashboard -->
+<!-- SLIDE 6: Dashboard Image -->
+<div class="page">
+  <div style="text-align:center; margin-bottom:24px;">
+    <div class="badge">Live System</div>
+    <div style="height:16px"></div>
+    <h2>Agent Dashboard</h2>
+  </div>
+  <img src="dash.jpg" style="max-width:100%; max-height:70vh; border-radius:16px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 20px 40px rgba(0,0,0,0.5);" />
+</div>
+
+<!-- SLIDE 7: Dashboard Stats -->
 <div class="page">
   <div style="text-align:center; margin-bottom:48px;">
     <div class="badge">Live System</div>
